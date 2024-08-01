@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from .exceptions import TokenValidationError
 
 class DymoAPI:
-    def __init__(self, config):
+    def __init__(self, config={}):
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
         self.tokens_response = None
