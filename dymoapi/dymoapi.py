@@ -47,7 +47,7 @@ class DymoAPI:
     def get_prayer_times(self, data):
         return "Prayer times"
 
-    def input_satinizer(self, data):
+    def satinizer(self, data):
         return "Sanitized input"
 
     def is_valid_pwd(self, data):
