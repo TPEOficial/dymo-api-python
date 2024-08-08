@@ -4,6 +4,10 @@ class DymoAPIError(Exception):
         super().__init__(message)
         self.message = f"[Dymo API] {message}"
 
-class TokenValidationError(DymoAPIError):
-    """Exception raised for errors in token validation."""
-    pass
+
+# Exception raised for errors in token validation.
+class AuthenticationError(DymoAPIError): pass
+# There are no tokens/uses available.
+class RateLimitError(DymoAPIError): pass
+# Invalid parameters.
+class BadRequestError(DymoAPIError): pass

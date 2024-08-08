@@ -1,6 +1,8 @@
-import requests
+import requests, importlib
 from datetime import datetime, timedelta
-from .exceptions import TokenValidationError
+from .exceptions import AuthenticationError
+
+# Modules.
 
 class DymoAPI:
     def __init__(self, config={}):
@@ -10,6 +12,12 @@ class DymoAPI:
         self.last_fetch_time = None
 
         if self.api_key: self.initialize_tokens()
+    
+    def _get_function(self, module_name, function_name="main"):
+        if module_name == "private" and self.api_key is None: raise AuthenticationError("Invalid private token.")
+        func = getattr(importlib.import_module(f".branches.{module_name}"), function_name)
+        if module_name == "private": return lambda *args, **kwargs: func(self.api_key, *args, **kwargs)
+        return func
 
     def initialize_tokens(self):
         current_time = datetime.now()
@@ -27,31 +35,26 @@ class DymoAPI:
             response = requests.post("https://api.tpeoficial.com/v1/dvr/tokens", json={"tokens": tokens})
             response.raise_for_status()
             data = response.json()
-            if self.root_api_key and not data.get("root"): raise TokenValidationError("Invalid root token.")
-            if self.api_key and not data.get("private"): raise TokenValidationError("Invalid private token.")
+            if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
+            if self.api_key and not data.get("private"): raise AuthenticationError("Invalid private token.")
             self.tokens_response = data
             self.last_fetch_time = current_time
             print("[Dymo API] Tokens initialized successfully.")
         except requests.RequestException as e:
             print(f"[Dymo API] Error during token validation: {e}")
-            raise TokenValidationError(f"Token validation error: {e}")
+            raise AuthenticationError(f"Token validation error: {e}")
 
-    def print_label(self, label_text):
-        print(f"[Dymo API] Printing label with text: {label_text} using API key: {self.api_key}")
-
-    # Private methods (placeholders for actual implementations)
     def is_valid_data(self, data):
-        return True
+        return self._get_function("private", "is_valid_data")(data)
 
-    # Public methods (placeholders for actual implementations)
     def get_prayer_times(self, data):
-        return "Prayer times"
+        return self._get_function("public", "get_prayer_times")(data)
 
     def satinizer(self, data):
-        return "Sanitized input"
+        return self._get_function("public", "satinizer")(data)
 
     def is_valid_pwd(self, data):
-        return True
+        return self._get_function("public", "is_valid_pwd")(data)
 
     def new_url_encrypt(self, data):
-        return "Encrypted URL"
+        return self._get_function("public", "new_url_encrypt")(data)
