@@ -53,9 +53,8 @@ def is_valid_pwd(data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
-def new_url_encrypt(data):
+def new_url_encrypt(url):
     try:
-        url = data.get("url")
         if url is None or not (url.startswith("https://") or url.startswith("http://")): raise BadRequestError("You must provide a valid url.")
         response = requests.get("https://api.tpeoficial.com/v1/public/url-encrypt", params={"url": url})
         response.raise_for_status()

@@ -11,3 +11,5 @@ class AuthenticationError(DymoAPIError): pass
 class RateLimitError(DymoAPIError): pass
 # Invalid parameters.
 class BadRequestError(DymoAPIError): pass
+# Error on request.
+class APIError(DymoAPIError): pass

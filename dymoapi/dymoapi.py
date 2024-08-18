@@ -1,6 +1,8 @@
-import requests, importlib
+import os, sys, requests, importlib
+from .utils.basics import DotDict
 from datetime import datetime, timedelta
 from .exceptions import AuthenticationError
+import dymoapi.response_models as response_models
 
 # Modules.
 
@@ -17,9 +19,9 @@ class DymoAPI:
     
     def _get_function(self, module_name, function_name="main"):
         if module_name == "private" and self.api_key is None: raise AuthenticationError("Invalid private token.")
-        func = getattr(importlib.import_module(f".branches.{module_name}"), function_name)
-        if module_name == "private": return lambda *args, **kwargs: func(self.api_key, *args, **kwargs)
-        return func
+        func = getattr(importlib.import_module(f"dymoapi.branches.{module_name}"), function_name)
+        if module_name == "private": return lambda *args, **kwargs: DotDict(func(self.api_key, *args, **kwargs))
+        return lambda *args, **kwargs: DotDict(func(*args, **kwargs))
 
     def initialize_tokens(self):
         current_time = datetime.now()
@@ -58,5 +60,8 @@ class DymoAPI:
     def is_valid_pwd(self, data):
         return self._get_function("public", "is_valid_pwd")(data)
 
-    def new_url_encrypt(self, data):
+    def new_url_encrypt(self, data) -> response_models.EncryptionResponse:
         return self._get_function("public", "new_url_encrypt")(data)
+    
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
