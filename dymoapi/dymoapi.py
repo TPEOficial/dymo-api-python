@@ -54,14 +54,14 @@ class DymoAPI:
     def get_prayer_times(self, data):
         return self._get_function("public", "get_prayer_times")(data)
 
-    def satinizer(self, data):
-        return self._get_function("public", "satinizer")(data)
+    def satinizer(self, data) -> response_models.SatinizerResponse:
+        return response_models.SatinizerResponse(**self._get_function("public", "satinizer")(data))
 
-    def is_valid_pwd(self, data):
-        return self._get_function("public", "is_valid_pwd")(data)
+    def is_valid_pwd(self, data) -> response_models.IsValidPwdResponse:
+        return response_models.IsValidPwdResponse(**self._get_function("public", "is_valid_pwd")(data))
 
     def new_url_encrypt(self, data) -> response_models.UrlEncryptResponse:
-        return self._get_function("public", "new_url_encrypt")(data)
+        return response_models.UrlEncryptResponse(**self._get_function("public", "new_url_encrypt")(data))
     
 if __name__ == "__main__":
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
