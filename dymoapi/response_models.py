@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Optional
 
 class UrlEncryptResponse(BaseModel):
     original: str
@@ -14,7 +14,6 @@ class IsValidPwdResponse(BaseModel):
     valid: bool
     password: str
     details: List[IsValidPwdDetails]
-
 
 class SatinizerFormats(BaseModel):
     ascii: bool
@@ -60,7 +59,6 @@ class SatinizerIncludes(BaseModel):
     symbols: bool
     digits: bool
 
-
 class SatinizerResponse(BaseModel):
     input: str
     formats: SatinizerFormats
@@ -79,12 +77,12 @@ class PrayerTimes(BaseModel):
     isha: str
 
 class PrayerTimesByTimezone(BaseModel):
-      timezone: str
-      prayerTimes: PrayerTimes
+    timezone: str
+    prayerTimes: PrayerTimes
 
 class PrayerTimesResponse(BaseModel):
-  country: str
-  prayerTimesByTimezone: List[PrayerTimesByTimezone]
+    country: str
+    prayerTimesByTimezone: List[PrayerTimesByTimezone]
 
 
 class DataVerifierEmail(BaseModel):
