@@ -44,11 +44,17 @@ class DymoAPI:
             print(f"[Dymo API] Error during token validation: {e}")
             raise AuthenticationError(f"Token validation error: {e}")
 
-    def is_valid_data(self, data):
-        return self._get_function("private", "is_valid_data")(data)
+    def is_valid_data(self, data) -> response_models.DataVerifierResponse:
+        response = self._get_function("private", "is_valid_data")(data)
+        if response.get("ip",{}).get("as"):
+            response["ip"]["_as"] = response["ip"]["as"]
+            response["ip"]["_class"] = response["ip"]["class"]
+            response["ip"].pop("as")
+            response["ip"].pop("class")
+        return response_models.DataVerifierResponse(**response)
 
-    def get_prayer_times(self, data):
-        return self._get_function("public", "get_prayer_times")(data)
+    def get_prayer_times(self, data) -> response_models.PrayerTimesResponse:
+        return response_models.PrayerTimesResponse(**self._get_function("public", "get_prayer_times")(data))
 
     def satinizer(self, data) -> response_models.SatinizerResponse:
         return response_models.SatinizerResponse(**self._get_function("public", "satinizer")(data))
