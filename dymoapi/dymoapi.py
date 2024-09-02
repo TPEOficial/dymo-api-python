@@ -1,10 +1,8 @@
-import os, sys, requests, importlib
 from .utils.basics import DotDict
+import os, sys, requests, importlib
 from datetime import datetime, timedelta
 from .exceptions import AuthenticationError
 import dymoapi.response_models as response_models
-
-# Modules.
 
 class DymoAPI:
     def __init__(self, config={}):
@@ -25,9 +23,7 @@ class DymoAPI:
 
     def initialize_tokens(self):
         current_time = datetime.now()
-        if self.tokens_response and self.last_fetch_time and (current_time - self.last_fetch_time) < timedelta(minutes=5):
-            print("[Dymo API] Using cached tokens response.")
-            return
+        if self.tokens_response and self.last_fetch_time and (current_time - self.last_fetch_time) < timedelta(minutes=5): return print("[Dymo API] Using cached tokens response.")
 
         tokens = {}
         if self.root_api_key: tokens["root"] = f"Bearer {self.root_api_key}"
