@@ -9,10 +9,10 @@ class DymoAPI:
         self.organization = config.get("organization", None)
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
+        self.server_email_config = config.get("server_email_config", None)
         self.tokens_response = None
         self.last_fetch_time = None
 
-        if (self.root_api_key or self.api_key) and not self.organization: raise AuthenticationError("Organization is required if a token is specified.")
         if self.api_key: self.initialize_tokens()
     
     def _get_function(self, module_name, function_name="main"):
@@ -54,7 +54,8 @@ class DymoAPI:
         return response_models.DataVerifierResponse(**response)
     
     def send_email(self, data) -> response_models.SendEmailResponse:
-        return response_models.DataVerifierResponse(**self._get_function("private", "send_email")(data))
+        if not self.server_email_config: raise AuthenticationError("You must configure the email client settings.")
+        return response_models.DataVerifierResponse(**self._get_function("private", "send_email")({**data, "serverEmailConfig": self.server_email_config}))
 
     def get_prayer_times(self, data) -> response_models.PrayerTimesResponse:
         return response_models.PrayerTimesResponse(**self._get_function("public", "get_prayer_times")(data))
