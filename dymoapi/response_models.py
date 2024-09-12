@@ -157,3 +157,8 @@ class DataVerifierResponse(BaseModel):
     domain: Optional[DataVerifierDomain]
     creditCard: Optional[DataVerifierCreditCard]
     ip: Optional[DataVerifierIp]
+
+
+class SendEmailResponse(BaseModel):
+    status: bool
+    error: Optional[str] = None

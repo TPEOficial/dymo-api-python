@@ -52,6 +52,9 @@ class DymoAPI:
             response["ip"].pop("as")
             response["ip"].pop("class")
         return response_models.DataVerifierResponse(**response)
+    
+    def send_email(self, data) -> response_models.SendEmailResponse:
+        return response_models.DataVerifierResponse(**self._get_function("private", "send_email")(data))
 
     def get_prayer_times(self, data) -> response_models.PrayerTimesResponse:
         return response_models.PrayerTimesResponse(**self._get_function("public", "get_prayer_times")(data))
