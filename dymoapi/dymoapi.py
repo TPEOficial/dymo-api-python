@@ -1,6 +1,7 @@
 from .utils.basics import DotDict
 import os, sys, requests, importlib
 from datetime import datetime, timedelta
+from .config import BASE_URL, set_base_url
 from .exceptions import AuthenticationError
 import dymoapi.response_models as response_models
 
@@ -12,6 +13,10 @@ class DymoAPI:
         self.server_email_config = config.get("server_email_config", None)
         self.tokens_response = None
         self.last_fetch_time = None
+        self.local = config.get("local", False)
+
+        set_base_url(self.local)
+        self.base_url = BASE_URL
 
         if self.api_key: self.initialize_tokens()
     
@@ -32,7 +37,7 @@ class DymoAPI:
         if not tokens: return
 
         try:
-            response = requests.post("https://api.tpeoficial.com/v1/dvr/tokens", json={"organization": self.organization, "tokens": tokens})
+            response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"organization": self.organization, "tokens": tokens})
             response.raise_for_status()
             data = response.json()
             if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
