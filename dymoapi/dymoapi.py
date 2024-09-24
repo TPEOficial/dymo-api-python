@@ -61,6 +61,9 @@ class DymoAPI:
     def send_email(self, data) -> response_models.SendEmailResponse:
         if not self.server_email_config: raise AuthenticationError("You must configure the email client settings.")
         return response_models.DataVerifierResponse(**self._get_function("private", "send_email")({**data, "serverEmailConfig": self.server_email_config}))
+    
+    def get_random(self, data) -> response_models.SRNGResponse:
+        return response_models.DataVerifierResponse(**self._get_function("private", "get_random")({**data}))
 
     def get_prayer_times(self, data) -> response_models.PrayerTimesResponse:
         return response_models.PrayerTimesResponse(**self._get_function("public", "get_prayer_times")(data))
