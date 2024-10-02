@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, List, Optional
+from typing import Dict, List, Union, Optional
 
 class UrlEncryptResponse(BaseModel):
     original: str
@@ -84,7 +84,6 @@ class PrayerTimesResponse(BaseModel):
     country: str
     prayerTimesByTimezone: List[PrayerTimesByTimezone]
 
-
 class DataVerifierEmail(BaseModel):
     valid: Optional[bool] = None
     fraud: Optional[bool] = None
@@ -158,6 +157,10 @@ class DataVerifierResponse(BaseModel):
     creditCard: Optional[DataVerifierCreditCard]
     ip: Optional[DataVerifierIp]
 
+
+class SRNGResponse(BaseModel):
+    values: List[Dict[str, Union[int, float]]]
+    executionTime: Union[int, float]
 
 class SendEmailResponse(BaseModel):
     status: bool
