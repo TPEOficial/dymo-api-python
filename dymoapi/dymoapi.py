@@ -7,7 +7,6 @@ import dymoapi.response_models as response_models
 
 class DymoAPI:
     def __init__(self, config={}):
-        self.organization = config.get("organization", None)
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
         self.server_email_config = config.get("server_email_config", None)
@@ -37,7 +36,7 @@ class DymoAPI:
         if not tokens: return
 
         try:
-            response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"organization": self.organization, "tokens": tokens})
+            response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"tokens": tokens})
             response.raise_for_status()
             data = response.json()
             if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
