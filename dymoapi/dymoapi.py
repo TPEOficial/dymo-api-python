@@ -77,5 +77,4 @@ class DymoAPI:
     def new_url_encrypt(self, data) -> response_models.UrlEncryptResponse:
         return response_models.UrlEncryptResponse(**self._get_function("public", "new_url_encrypt")(data))
     
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+if __name__ == "__main__": sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
