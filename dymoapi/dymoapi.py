@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from .config import BASE_URL, set_base_url
 from .exceptions import AuthenticationError
 import dymoapi.response_models as response_models
+from .services.autoupload import check_for_updates
 
 class DymoAPI:
     def __init__(self, config={}):
@@ -16,7 +17,7 @@ class DymoAPI:
 
         set_base_url(self.local)
         self.base_url = BASE_URL
-
+        check_for_updates()
         if self.api_key: self.initialize_tokens()
     
     def _get_function(self, module_name, function_name="main"):
