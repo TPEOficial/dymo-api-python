@@ -3,7 +3,7 @@ from ..config import BASE_URL, set_base_url
 from ..exceptions import APIError, BadRequestError
 
 def is_valid_data(token, data):
-    if not any([key in list(data.keys()) for key in ["email", "phone", "domain", "creditCard", "ip"]]): raise BadRequestError("You must provide at least one parameter.")
+    if not any([key in list(data.keys()) for key in ["email", "phone", "domain", "creditCard", "ip", "wallet"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
         response = requests.post(f"{BASE_URL}/v1/private/secure/verify", json=data, headers={"Authorization": token})
         response.raise_for_status()
