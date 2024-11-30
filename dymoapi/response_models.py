@@ -163,5 +163,7 @@ class SRNGResponse(BaseModel):
     executionTime: Union[int, float]
 
 class SendEmailResponse(BaseModel):
-    status: bool
+    status: Union[bool, str]
     error: Optional[str] = None
+    message: Optional[str] = None
+    warning : Optional[str] = None
