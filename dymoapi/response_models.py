@@ -87,6 +87,7 @@ class PrayerTimesResponse(BaseModel):
 class DataVerifierEmail(BaseModel):
     valid: Optional[bool] = None
     fraud: Optional[bool] = None
+    proxiedEmail: Optional[bool] = None
     freeSubdomain: Optional[bool] = None
     corporate: Optional[bool] = None
     email: Optional[str] = None
