@@ -92,6 +92,7 @@ class DataVerifierEmail(BaseModel):
     corporate: Optional[bool] = None
     email: Optional[str] = None
     realUser: Optional[str] = None
+    didYouMean: Optional[bool] = None
     customTLD: Optional[bool] = None
     domain: Optional[str] = None
     roleAccount: Optional[bool] = None
@@ -157,7 +158,6 @@ class DataVerifierResponse(BaseModel):
     domain: Optional[DataVerifierDomain]
     creditCard: Optional[DataVerifierCreditCard]
     ip: Optional[DataVerifierIp]
-
 
 class SRNGResponse(BaseModel):
     values: List[Dict[str, Union[int, float]]]
