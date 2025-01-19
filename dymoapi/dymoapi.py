@@ -1,22 +1,23 @@
 from .utils.basics import DotDict
 import os, sys, requests, importlib
 from datetime import datetime, timedelta
-from .config import BASE_URL, set_base_url
+from .config import set_base_url, get_base_url
 from .exceptions import AuthenticationError
 import dymoapi.response_models as response_models
 from .services.autoupload import check_for_updates
 
 class DymoAPI:
+    tokens_response = None
+    tokens_verified = False    
+
     def __init__(self, config={}):
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
         self.server_email_config = config.get("server_email_config", None)
-        self.tokens_response = None
-        self.tokens_verified = False
         self.local = config.get("local", False)
 
         set_base_url(self.local)
-        self.base_url = BASE_URL
+        self.base_url = get_base_url()
         check_for_updates()
         if self.api_key: self.initialize_tokens()
     
@@ -27,7 +28,7 @@ class DymoAPI:
         return lambda *args, **kwargs: DotDict(func(*args, **kwargs))
 
     def initialize_tokens(self):
-        if self.tokens_response and self.tokens_verified: return print("[Dymo API] Using cached tokens response.")
+        if DymoAPI.tokens_response and DymoAPI.tokens_verified: return print("[Dymo API] Using cached tokens response.")
         tokens = {}
         if self.root_api_key: tokens["root"] = f"Bearer {self.root_api_key}"
         if self.api_key: tokens["private"] = f"Bearer {self.api_key}"
@@ -40,8 +41,8 @@ class DymoAPI:
             data = response.json()
             if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
             if self.api_key and not data.get("private"): raise AuthenticationError("Invalid private token.")
-            self.tokens_response = data
-            self.tokens_verified = True
+            DymoAPI.tokens_response = data
+            DymoAPI.tokens_verified = True
             print("[Dymo API] Tokens initialized successfully.")
         except requests.RequestException as e:
             print(f"[Dymo API] Error during token validation: {e}")
