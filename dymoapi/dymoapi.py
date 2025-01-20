@@ -1,10 +1,12 @@
+import logging
 from .utils.basics import DotDict
 import os, sys, requests, importlib
 from datetime import datetime, timedelta
 from .config import set_base_url, get_base_url
-from .exceptions import AuthenticationError
 import dymoapi.response_models as response_models
 from .services.autoupload import check_for_updates
+
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DymoAPI:
     tokens_response = None
@@ -22,7 +24,7 @@ class DymoAPI:
         if self.api_key: self.initialize_tokens()
     
     def _get_function(self, module_name, function_name="main"):
-        if module_name == "private" and self.api_key is None: raise AuthenticationError("Invalid private token.")
+        if module_name == "private" and self.api_key is None: return logging.error("Invalid private token.")
         func = getattr(importlib.import_module(f".branches.{module_name}", package="dymoapi"), function_name)
         if module_name == "private": return lambda *args, **kwargs: DotDict(func(self.api_key, *args, **kwargs))
         return lambda *args, **kwargs: DotDict(func(*args, **kwargs))
@@ -39,14 +41,14 @@ class DymoAPI:
             response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"tokens": tokens})
             response.raise_for_status()
             data = response.json()
-            if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
-            if self.api_key and not data.get("private"): raise AuthenticationError("Invalid private token.")
+            if self.root_api_key and not data.get("root"): return logging.error("Invalid root token.")
+            if self.api_key and not data.get("private"): return logging.error("Invalid private token.")
             DymoAPI.tokens_response = data
             DymoAPI.tokens_verified = True
             print("[Dymo API] Tokens initialized successfully.")
         except requests.RequestException as e:
             print(f"[Dymo API] Error during token validation: {e}")
-            raise AuthenticationError(f"Token validation error: {e}")
+            return logging.error("Token validation error: {e}")
 
     def is_valid_data(self, data) -> response_models.DataVerifierResponse:
         response = self._get_function("private", "is_valid_data")(data)
@@ -58,7 +60,7 @@ class DymoAPI:
         return response_models.DataVerifierResponse(**response)
     
     def send_email(self, data) -> response_models.SendEmailResponse:
-        if not self.server_email_config and not self.root_api_key: raise AuthenticationError("You must configure the email client settings.")
+        if not self.server_email_config and not self.root_api_key: return logging.error("You must configure the email client settings.")
         return response_models.DataVerifierResponse(**self._get_function("private", "send_email")({**data, "serverEmailConfig": self.server_email_config}))
     
     def get_random(self, data) -> response_models.SRNGResponse:
