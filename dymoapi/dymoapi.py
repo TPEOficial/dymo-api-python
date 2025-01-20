@@ -2,6 +2,7 @@ import logging
 from .utils.basics import DotDict
 import os, sys, requests, importlib
 from datetime import datetime, timedelta
+from .exceptions import AuthenticationError
 from .config import set_base_url, get_base_url
 import dymoapi.response_models as response_models
 from .services.autoupload import check_for_updates
@@ -41,14 +42,13 @@ class DymoAPI:
             response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"tokens": tokens})
             response.raise_for_status()
             data = response.json()
-            if self.root_api_key and not data.get("root"): return logging.error("Invalid root token.")
-            if self.api_key and not data.get("private"): return logging.error("Invalid private token.")
+            if self.root_api_key and data.get("root"): raise AuthenticationError("Invalid root token.")
+            if self.api_key and not data.get("private"): raise AuthenticationError("Invalid private token.")
             DymoAPI.tokens_response = data
             DymoAPI.tokens_verified = True
             print("[Dymo API] Tokens initialized successfully.")
-        except requests.RequestException as e:
-            print(f"[Dymo API] Error during token validation: {e}")
-            return logging.error("Token validation error: {e}")
+        except (requests.RequestException, AuthenticationError) as e:
+            return logging.error(f"Token validation error: {e}")
 
     def is_valid_data(self, data) -> response_models.DataVerifierResponse:
         response = self._get_function("private", "is_valid_data")(data)
