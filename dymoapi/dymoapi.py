@@ -42,7 +42,7 @@ class DymoAPI:
             response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"tokens": tokens})
             response.raise_for_status()
             data = response.json()
-            if self.root_api_key and data.get("root"): raise AuthenticationError("Invalid root token.")
+            if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
             if self.api_key and not data.get("private"): raise AuthenticationError("Invalid private token.")
             DymoAPI.tokens_response = data
             DymoAPI.tokens_verified = True
