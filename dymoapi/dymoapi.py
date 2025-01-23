@@ -50,7 +50,7 @@ class DymoAPI:
         except (requests.RequestException, AuthenticationError) as e:
             return logging.error(f"Token validation error: {e}")
 
-    def is_valid_data(self, data) -> response_models.DataVerifierResponse:
+    def is_valid_data(self, data: response_models.Validator) -> response_models.DataVerifierResponse:
         response = self._get_function("private", "is_valid_data")(data)
         if response.get("ip",{}).get("as"):
             response["ip"]["_as"] = response["ip"]["as"]
@@ -59,20 +59,20 @@ class DymoAPI:
             response["ip"].pop("class")
         return response_models.DataVerifierResponse(**response)
     
-    def send_email(self, data) -> response_models.SendEmailResponse:
+    def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
         if not self.server_email_config and not self.root_api_key: return logging.error("You must configure the email client settings.")
         return response_models.DataVerifierResponse(**self._get_function("private", "send_email")({**data, "serverEmailConfig": self.server_email_config}))
     
-    def get_random(self, data) -> response_models.SRNGResponse:
+    def get_random(self, data: response_models.SRNG) -> response_models.SRNGResponse:
         return response_models.DataVerifierResponse(**self._get_function("private", "get_random")({**data}))
 
-    def get_prayer_times(self, data) -> response_models.PrayerTimesResponse:
+    def get_prayer_times(self, data: response_models.PrayerTimesData) -> response_models.PrayerTimesResponse:
         return response_models.PrayerTimesResponse(**self._get_function("public", "get_prayer_times")(data))
 
-    def satinizer(self, data) -> response_models.SatinizerResponse:
+    def satinizer(self, data: response_models.InputSanitizerData) -> response_models.SatinizerResponse:
         return response_models.SatinizerResponse(**self._get_function("public", "satinizer")(data))
 
-    def is_valid_pwd(self, data) -> response_models.IsValidPwdResponse:
+    def is_valid_pwd(self, data: response_models.IsValidPwdData) -> response_models.IsValidPwdResponse:
         return response_models.IsValidPwdResponse(**self._get_function("public", "is_valid_pwd")(data))
 
     def new_url_encrypt(self, data) -> response_models.UrlEncryptResponse:

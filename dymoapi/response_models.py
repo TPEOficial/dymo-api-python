@@ -1,10 +1,45 @@
+from enum import Enum
 from pydantic import BaseModel
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Any
+
+class VerifyPlugins(Enum):
+    COMPROMISE_DETECTOR = "compromiseDetector"
+    NSFW = "nsfw"
+    REPUTATION = "reputation"
+    TOR_NETWORK = "torNetwork"
+    TYPOSQUATTING = "typosquatting"
+    URL_SHORTENER = "urlShortener"
+
+class PhoneData(BaseModel):
+    iso: Any
+    phone: str
+
+class CreditCardData(BaseModel):
+    pan: Union[str, int]
+    expirationDate: Optional[str] = None
+    cvc: Optional[Union[str, int]] = None
+    cvv: Optional[Union[str, int]] = None
+
+class Validator(BaseModel):
+    email: Optional[str] = None
+    phone: Optional[PhoneData] = None
+    domain: Optional[str] = None
+    creditCard: Optional[Union[str, CreditCardData]] = None
+    ip: Optional[str] = None
+    wallet: Optional[str] = None
+    plugins: Optional[List[VerifyPlugins]] = None
 
 class UrlEncryptResponse(BaseModel):
     original: str
     code: str
     encrypt: str
+
+class IsValidPwdData(BaseModel):
+    email: Optional[str] = None
+    password: Optional[str] = None
+    bannedWords: Optional[Union[str, List[str]]] = None
+    min: Optional[int] = None
+    max: Optional[int] = None
 
 class IsValidPwdDetails(BaseModel):
     validation: str
@@ -14,6 +49,9 @@ class IsValidPwdResponse(BaseModel):
     valid: bool
     password: str
     details: List[IsValidPwdDetails]
+
+class InputSanitizerData(BaseModel):
+    input: Optional[str] = None
 
 class SatinizerFormats(BaseModel):
     ascii: bool
@@ -63,6 +101,10 @@ class SatinizerResponse(BaseModel):
     input: str
     formats: SatinizerFormats
     includes: SatinizerIncludes
+
+class PrayerTimesData(BaseModel):
+    lat: Optional[float] = None
+    lon: Optional[float] = None
 
 class PrayerTimes(BaseModel):
     coordinates: str
@@ -159,6 +201,11 @@ class DataVerifierResponse(BaseModel):
     creditCard: Optional[DataVerifierCreditCard]
     ip: Optional[DataVerifierIp]
 
+class SRNG(BaseModel):
+    min: int
+    max: int
+    quantity: Optional[int] = None
+
 class SRNGResponse(BaseModel):
     values: List[Dict[str, Union[int, float]]]
     executionTime: Union[int, float]
@@ -167,3 +214,7 @@ class SendEmailResponse(BaseModel):
     status: Union[bool, str]
     error: Optional[str] = None
     warning: Optional[str] = None
+
+class EmailStatus(BaseModel):
+    status: bool
+    error: Optional[str] = None
