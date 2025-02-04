@@ -9,9 +9,6 @@ from .services.autoupload import check_for_updates
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DymoAPI:
-    tokens_response = None
-    tokens_verified = False    
-
     def __init__(self, config={}):
         """
         This is the main class to interact with the Dymo API. It should be
@@ -43,33 +40,12 @@ class DymoAPI:
         set_base_url(self.local)
         self.base_url = get_base_url()
         check_for_updates()
-        if self.api_key: self.initialize_tokens()
     
     def _get_function(self, module_name, function_name="main"):
         if module_name == "private" and self.api_key is None: return logging.error("Invalid private token.")
         func = getattr(importlib.import_module(f".branches.{module_name}", package="dymoapi"), function_name)
         if module_name == "private": return lambda *args, **kwargs: DotDict(func(self.api_key, *args, **kwargs))
         return lambda *args, **kwargs: DotDict(func(*args, **kwargs))
-
-    def initialize_tokens(self):
-        if DymoAPI.tokens_response and DymoAPI.tokens_verified: return print("[Dymo API] Using cached tokens response.")
-        tokens = {}
-        if self.root_api_key: tokens["root"] = f"Bearer {self.root_api_key}"
-        if self.api_key: tokens["private"] = f"Bearer {self.api_key}"
-
-        if not tokens: return
-
-        try:
-            response = requests.post(f"{self.base_url}/v1/dvr/tokens", json={"tokens": tokens})
-            response.raise_for_status()
-            data = response.json()
-            if self.root_api_key and not data.get("root"): raise AuthenticationError("Invalid root token.")
-            if self.api_key and not data.get("private"): raise AuthenticationError("Invalid private token.")
-            DymoAPI.tokens_response = data
-            DymoAPI.tokens_verified = True
-            print("[Dymo API] Tokens initialized successfully.")
-        except (requests.RequestException, AuthenticationError) as e:
-            return logging.error(f"Token validation error: {e}")
 
     def is_valid_data(self, data: response_models.Validator) -> response_models.DataVerifierResponse:
         """
