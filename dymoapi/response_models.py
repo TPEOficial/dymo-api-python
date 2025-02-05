@@ -9,6 +9,7 @@ class VerifyPlugins(Enum):
     TOR_NETWORK = "torNetwork"
     TYPOSQUATTING = "typosquatting"
     URL_SHORTENER = "urlShortener"
+    BLOCKLIST = "blocklist"
 
 class PhoneData(BaseModel):
     iso: Any
