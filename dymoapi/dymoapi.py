@@ -1,7 +1,5 @@
-import logging
+import os, sys, logging, importlib 
 from .utils.basics import DotDict
-import os, sys, requests, importlib
-from .exceptions import AuthenticationError
 from .config import set_base_url, get_base_url
 import dymoapi.response_models as response_models
 from .services.autoupload import check_for_updates
@@ -18,24 +16,23 @@ class DymoAPI:
 
         Args:
             - options (dict, optional): Options to create the DymoAPI instance.
-            - options["rootApiKey"] (str, optional): The root API key. Defaults to None.
-            - options["apiKey"] (str, optional): The API key. Defaults to None.
-            - options["local"] (bool, optional): Whether to use a local server instead of 
+            - options["root_api_key"] (str, optional): The root API key. Defaults to None.
+            - options["api_key"] (str, optional): The API key. Defaults to None.
+            - options["base_url"] (str, optional): Whether to use a local server instead of 
                                             the cloud server. Defaults to False.
-            - options["serverEmailConfig"] (dict, optional): 
+            - options["server_email_config"] (dict, optional): 
                                         The server email config. Defaults to None.
 
         Example:
             dymo_api = DymoAPI({
-                "rootApiKey": "6bfb7675-6b69-4f8d-9f43-5a6f7f02c6c5",
-                "apiKey": "4c8b7675-6b69-4f8d-9f43-5a6f7f02c6c5",
-                "local": True
+                "root_api_key": "6bfb7675-6b69-4f8d-9f43-5a6f7f02c6c5",
+                "api_key": "4c8b7675-6b69-4f8d-9f43-5a6f7f02c6c5"
             })
         """
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
         self.server_email_config = config.get("server_email_config", None)
-        self.local = config.get("local", False)
+        self.base_url = config.get("base_url", "https://api.tpeoficial.com")
 
         set_base_url(self.local)
         self.base_url = get_base_url()

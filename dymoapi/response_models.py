@@ -12,7 +12,7 @@ class VerifyPlugins(Enum):
     BLOCKLIST = "blocklist"
 
 class PhoneData(BaseModel):
-    iso: Any
+    iso: Optional[str] = None
     phone: str
 
 class CreditCardData(BaseModel):
@@ -23,7 +23,7 @@ class CreditCardData(BaseModel):
 
 class Validator(BaseModel):
     email: Optional[str] = None
-    phone: Optional[PhoneData] = None
+    phone: Optional[Union[PhoneData, str]] = None
     domain: Optional[str] = None
     creditCard: Optional[Union[str, CreditCardData]] = None
     ip: Optional[str] = None
