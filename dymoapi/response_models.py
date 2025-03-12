@@ -135,7 +135,7 @@ class DataVerifierEmail(BaseModel):
     corporate: Optional[bool] = None
     email: Optional[str] = None
     realUser: Optional[str] = None
-    didYouMean: Optional[bool] = None
+    didYouMean: Optional[Union[str, bool]] = None
     customTLD: Optional[bool] = None
     domain: Optional[str] = None
     roleAccount: Optional[bool] = None
