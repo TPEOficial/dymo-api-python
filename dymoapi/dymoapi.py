@@ -34,14 +34,14 @@ class DymoAPI:
         self.server_email_config = config.get("server_email_config", None)
         self.base_url = config.get("base_url", "https://api.tpeoficial.com")
 
-        set_base_url(self.local)
+        set_base_url(self.base_url)
         self.base_url = get_base_url()
         check_for_updates()
     
     def _get_function(self, module_name, function_name="main"):
-        if module_name == "private" and self.api_key is None: return logging.error("Invalid private token.")
+        if module_name == "private" and self.api_key is None and self.root_api_key is None: return logging.error("Invalid private token.")
         func = getattr(importlib.import_module(f".branches.{module_name}", package="dymoapi"), function_name)
-        if module_name == "private": return lambda *args, **kwargs: DotDict(func(self.api_key, *args, **kwargs))
+        if module_name == "private": return lambda *args, **kwargs: DotDict(func(self.api_key or self.root_api_key, *args, **kwargs))
         return lambda *args, **kwargs: DotDict(func(*args, **kwargs))
 
     def is_valid_data(self, data: response_models.Validator) -> response_models.DataVerifierResponse:
