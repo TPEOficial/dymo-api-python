@@ -3,6 +3,8 @@ from urllib.parse import quote
 from ..config import get_base_url, set_base_url
 from ..exceptions import APIError, BadRequestError
 
+headers = {"User-Agent": "DymoAPISDK/1.0.0"}
+
 def get_prayer_times(data):
     if not data.lat or not data.lon: raise BadRequestError("You must provide a latitude and longitude.")
     params = {
@@ -19,7 +21,7 @@ def satinizer(data):
     try:
         input_value = data.get("input")
         if input_value is None: raise BadRequestError("You must specify at least the input.")
-        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)})
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -49,7 +51,7 @@ def is_valid_pwd(data):
         if max_length is not None:
             if not isinstance(max_length, int) or max_length < 32 or max_length > 100: raise BadRequestError("If you provide a maximum it must be valid.")
             params["max"] = max_length
-        response = requests.get(f"{get_base_url()}/v1/public/validPwd", params=params)
+        response = requests.get(f"{get_base_url()}/v1/public/validPwd", params=params, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -57,7 +59,7 @@ def is_valid_pwd(data):
 def new_url_encrypt(url):
     try:
         if url is None or not (url.startswith("https://") or url.startswith("http://")): raise BadRequestError("You must provide a valid url.")
-        response = requests.get(f"{get_base_url()}/v1/public/url-encrypt", params={"url": url})
+        response = requests.get(f"{get_base_url()}/v1/public/url-encrypt", params={"url": url}, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
