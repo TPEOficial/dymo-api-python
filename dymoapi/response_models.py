@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import Dict, List, Union, Optional, Any
+from typing import Dict, List, Union, Optional, Literal, Any
 
 class VerifyPlugins(Enum):
     COMPROMISE_DETECTOR = "compromiseDetector"
@@ -141,12 +141,24 @@ class DataVerifierEmail(BaseModel):
     roleAccount: Optional[bool] = None
     plugins: Optional[Dict[str, str]] = None
 
+class CarrierInfo(BaseModel):
+    carrierName: str
+    accuracy: float
+    carrierType: Literal[
+        "PREMIUM_RATE", "TOLL_FREE", "SHARED_COST", "VOIP", "PERSONAL_NUMBER",
+        "PAGER", "UAN", "VOICEMAIL", "FIXED_LINE_OR_MOBILE", "FIXED_LINE",
+        "MOBILE", "Unknown"
+    ]
+    carrierCountry: str
+    carrierCountryCode: str
+
 class DataVerifierPhone(BaseModel):
     valid: Optional[bool] = None
     fraud: Optional[bool] = None
     phone: Optional[str] = None 
     prefix: Optional[str] = None
     number: Optional[str] = None
+    carrierInfo: Optional[CarrierInfo] = None
     country: Optional[str] = None
     plugins: Optional[Dict[str, str]] = None
 
