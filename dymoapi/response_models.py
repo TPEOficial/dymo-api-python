@@ -144,11 +144,6 @@ class DataVerifierEmail(BaseModel):
 class CarrierInfo(BaseModel):
     carrierName: str
     accuracy: float
-    carrierType: Literal[
-        "PREMIUM_RATE", "TOLL_FREE", "SHARED_COST", "VOIP", "PERSONAL_NUMBER",
-        "PAGER", "UAN", "VOICEMAIL", "FIXED_LINE_OR_MOBILE", "FIXED_LINE",
-        "MOBILE", "Unknown"
-    ]
     carrierCountry: str
     carrierCountryCode: str
 
@@ -158,6 +153,11 @@ class DataVerifierPhone(BaseModel):
     phone: Optional[str] = None 
     prefix: Optional[str] = None
     number: Optional[str] = None
+    lineType: Literal[
+        "PREMIUM_RATE", "TOLL_FREE", "SHARED_COST", "VOIP", "PERSONAL_NUMBER",
+        "PAGER", "UAN", "VOICEMAIL", "FIXED_LINE_OR_MOBILE", "FIXED_LINE",
+        "MOBILE", "Unknown"
+    ]
     carrierInfo: Optional[CarrierInfo] = None
     country: Optional[str] = None
     countryCode: Optional[str] = None
