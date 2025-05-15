@@ -160,6 +160,7 @@ class DataVerifierPhone(BaseModel):
     number: Optional[str] = None
     carrierInfo: Optional[CarrierInfo] = None
     country: Optional[str] = None
+    countryCode: Optional[str] = None
     plugins: Optional[Dict[str, str]] = None
 
 class DataVerifierDomain(BaseModel):
