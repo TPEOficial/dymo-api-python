@@ -108,7 +108,6 @@ class DymoAPI:
             Exception: An error will be thrown if there is an issue with the email sending process.
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/sender-send-email/getting-started)
-
         """
         if not self.server_email_config and not self.root_api_key: return logging.error("You must configure the email client settings.")
         return response_models.DataVerifierResponse(**self._get_function("private", "send_email")({**data, "serverEmailConfig": self.server_email_config}))
@@ -134,9 +133,32 @@ class DymoAPI:
                     generation process.
             
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/secure-random-number-generator)
-
         """
         return response_models.DataVerifierResponse(**self._get_function("private", "get_random")({**data}))
+    
+    def extract_with_textly(self, data: response_models.Textly) -> response_models.TextlyResponse:
+        """
+        Extracts structured data from a given text using the Textly endpoint.
+
+        This method requires a valid private API token to authenticate the request.
+        The input must include both the text to process and a format schema describing 
+        the desired structured output.
+
+        Args:
+            data (response_models.Textly): The input object containing the following:
+                - data (str): The raw text to extract information from.
+                - format (Dict[str, Any]): A dictionary defining the expected structure of the extracted data.
+
+        Returns:
+            response_models.TextlyResponse: The structured data extracted from the text.
+
+        Raises:
+            Exception: If authentication fails, required fields are missing, or if the request to the extraction 
+            service fails.
+
+        [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/extract-textly)
+        """        
+        return response_models.ExtractWithTextlyResponse(**self._get_function("private", "extract_with_textly")({**data}))
 
     def get_prayer_times(self, data: response_models.PrayerTimesData) -> response_models.PrayerTimesResponse:
         """

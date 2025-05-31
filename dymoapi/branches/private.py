@@ -1,5 +1,5 @@
 import requests
-from ..config import get_base_url, set_base_url
+from ..config import get_base_url
 from ..exceptions import APIError, BadRequestError
 
 def is_valid_data(token, data):
@@ -33,6 +33,25 @@ def get_random(token, data):
     if data.max < -1000000000 or data.max > 1000000000: raise BadRequestError("'max' must be an integer in the interval [-1000000000}, 1000000000].")
     try:
         response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "Authorization": token})
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
+
+
+def extract_with_textly(token: str, data: dict) -> dict:
+    if not data.get("data"): raise BadRequestError("No data provided.")
+    if not data.get("format"): raise BadRequestError("No format provided.")
+
+    try:
+        response = requests.post(
+            f"{get_base_url()}/private/textly/extract",
+            json=data,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "DymoAPISDK/1.0.0",
+                "Authorization": token
+            }
+        )
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))

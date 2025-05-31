@@ -233,3 +233,6 @@ class SendEmailResponse(BaseModel):
 class EmailStatus(BaseModel):
     status: bool
     error: Optional[str] = None
+
+class ExtractWithTextlyResponse(BaseModel):
+    __root__: Any
