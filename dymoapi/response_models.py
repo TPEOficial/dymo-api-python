@@ -22,6 +22,7 @@ class CreditCardData(BaseModel):
     cvv: Optional[Union[str, int]] = None
 
 class Validator(BaseModel):
+    url: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[Union[PhoneData, str]] = None
     domain: Optional[str] = None
@@ -127,6 +128,15 @@ class PrayerTimesResponse(BaseModel):
     country: str
     prayerTimesByTimezone: List[PrayerTimesByTimezone]
 
+class DataVerifierURL(BaseModel):
+    valid: Optional[bool] = None
+    fraud: Optional[bool] = None
+    freeSubdomain: Optional[bool] = None
+    customTLD: Optional[bool] = None
+    url: Optional[str] = None
+    domain: Optional[str] = None
+    plugins: Optional[Dict[str, str]] = None
+
 class DataVerifierEmail(BaseModel):
     valid: Optional[bool] = None
     fraud: Optional[bool] = None
@@ -210,6 +220,7 @@ class DataVerifierIp(BaseModel):
     plugins: Optional[Dict[str, str]] = None
 
 class DataVerifierResponse(BaseModel):
+    url: Optional[DataVerifierURL]
     email: Optional[DataVerifierEmail]
     phone: Optional[DataVerifierPhone]
     domain: Optional[DataVerifierDomain]

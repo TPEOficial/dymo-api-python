@@ -53,6 +53,7 @@ class DymoAPI:
 
         Args:
             - data (response_models.Validator): The data to be validated.
+            - data["url"] (str, optional): Optional URL to be validated.
             - data["email"] (str, optional): Optional email address to be validated.
             - data["phone"] (response_models.PhoneData, optional): Optional phone number data to be validated.
             - data["domain"] (str, optional): Optional domain name to be validated.
