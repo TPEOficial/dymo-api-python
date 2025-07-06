@@ -3,7 +3,7 @@ from ..config import get_base_url
 from ..exceptions import APIError, BadRequestError
 
 def is_valid_data(token, data):
-    if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet"]]): raise BadRequestError("You must provide at least one parameter.")
+    if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
         response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "Authorization": token})
         response.raise_for_status()

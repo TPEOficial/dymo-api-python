@@ -29,6 +29,7 @@ class Validator(BaseModel):
     creditCard: Optional[Union[str, CreditCardData]] = None
     ip: Optional[str] = None
     wallet: Optional[str] = None
+    userAgent: Optional[str] = None
     plugins: Optional[List[VerifyPlugins]] = None
 
 class UrlEncryptResponse(BaseModel):
@@ -219,6 +220,25 @@ class DataVerifierIp(BaseModel):
     hosting: Optional[bool | str] = None
     plugins: Optional[Dict[str, str]] = None
 
+
+class DataVerifierDevice(BaseModel):
+    type: Optional[str] = None
+    brand: Optional[str] = None
+
+class DataVerifierUserAgent(BaseModel):
+    valid: bool
+    type: Optional[str] = None
+    clientSlug: Optional[str] = None
+    clientName: Optional[str] = None
+    version: Optional[str] = None
+    userAgent: Optional[str] = None
+    fraud: Optional[bool] = None
+    bot: Optional[bool] = None
+    info: Optional[str] = None
+    os: Optional[str] = None
+    device: DataVerifierDevice
+    plugins: Optional[Dict[str, Any]] = None
+
 class DataVerifierResponse(BaseModel):
     url: Optional[DataVerifierURL]
     email: Optional[DataVerifierEmail]
@@ -226,6 +246,7 @@ class DataVerifierResponse(BaseModel):
     domain: Optional[DataVerifierDomain]
     creditCard: Optional[DataVerifierCreditCard]
     ip: Optional[DataVerifierIp]
+    userAgent: Optional[DataVerifierUserAgent]
 
 class SRNG(BaseModel):
     min: int

@@ -60,6 +60,7 @@ class DymoAPI:
             - data["creditCard"] (str or response_models.CreditCardData, optional): Optional credit card number or data to be validated.
             - data["ip"] (str, optional): Optional IP address to be validated.
             - data["wallet"] (str, optional): Optional wallet address to be validated.
+            - data["userAgent"] (str, optional): Optional user agent to be validated.
             - data["plugins"] (list[response_models.VerifyPlugins], optional): Optional array of verification plugins to be used.
 
         Returns:
