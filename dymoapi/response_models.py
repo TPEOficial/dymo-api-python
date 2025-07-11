@@ -6,6 +6,7 @@ class VerifyPlugins(Enum):
     COMPROMISE_DETECTOR = "compromiseDetector"
     NSFW = "nsfw"
     REPUTATION = "reputation"
+    RISK_SCORE = "riskScore"
     TOR_NETWORK = "torNetwork"
     TYPOSQUATTING = "typosquatting"
     URL_SHORTENER = "urlShortener"
