@@ -32,6 +32,7 @@ class DymoAPI:
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
         self.server_email_config = config.get("server_email_config", None)
+        self.rules = config.get("rules", {"email": {"deny": ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]}})
         self.base_url = config.get("base_url", "https://api.tpeoficial.com")
 
         set_base_url(self.base_url)
@@ -106,7 +107,8 @@ class DymoAPI:
         See also:
             https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier
         """
-        return self._get_function("private", "is_valid_email")(email, rules)
+        rules_to_use = rules or self.rules.get("email")
+        return self._get_function("private", "is_valid_email")(email, rules_to_use)
     
     def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
         """
