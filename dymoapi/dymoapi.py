@@ -79,6 +79,35 @@ class DymoAPI:
             response["ip"].pop("class")
         return response_models.DataVerifierResponse(**response)
     
+    def is_valid_email(self, email: str, rules: dict | None = None) -> bool:
+        """
+        Wrapper for the private email validation function.
+
+        Calls the internal `is_valid_email` function with the provided email and deny rules,
+        returning True or False according to the validation result.
+
+        Args:
+            email (str): The email address to validate.
+            rules (dict, optional): Validation rules object with key "deny" (list of deny rules). 
+                ⚠️ Some deny rules are PREMIUM: "NO_MX_RECORDS", "HIGH_RISK_SCORE", "NO_REACHABLE".
+
+        Returns:
+            bool: True if the email passes validation, False otherwise.
+
+        Raises:
+            APIError: If the underlying validation function fails or the API key is missing.
+
+        Example:
+            >>> valid = dymoClient.is_valid_email(
+            >>>     "user@example.com",
+            >>>     rules={"deny": ["FRAUD", "NO_MX_RECORDS"]}
+            >>> )
+
+        See also:
+            https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier
+        """
+        return self._get_function("private", "is_valid_email")(email, rules)
+    
     def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
         """
         Sends an email using the configured email client settings.

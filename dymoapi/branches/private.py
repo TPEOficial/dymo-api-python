@@ -10,6 +10,59 @@ def is_valid_data(token, data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
+def is_valid_email(token: str | None, email: str, rules: dict | None = None) -> bool:
+    """
+    Validates the given email against the configured deny rules.
+
+    Args:
+        token (str | None): Authentication token (required).
+        email (str): Email to validate.
+        rules (dict | None): Optional rules dict with 'deny' list. Defaults to
+            ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"].
+            ⚠️ "NO_MX_RECORDS", "HIGH_RISK_SCORE" and "NO_REACHABLE" are PREMIUM.
+
+    Returns:
+        bool: True if the email passes all deny rules, False otherwise.
+
+    Raises:
+        APIError: If token is None or the request fails.
+    """
+    if token is None: raise APIError("Invalid private token.")
+
+    if rules is None: rules = {"deny": ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]}
+
+    plugins = [
+        "mxRecords" if "NO_MX_RECORDS" in rules["deny"] else None,
+        "reachability" if "NO_REACHABLE" in rules["deny"] else None,
+        "riskScore" if "HIGH_RISK_SCORE" in rules["deny"] else None
+    ]
+    plugins = [p for p in plugins if p is not None]
+
+    try:
+        response = requests.post(
+            f"{get_base_url()}/v1/private/secure/verify",
+            json={"email": email, "plugins": plugins},
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "Authorization": token}
+        )
+        response.raise_for_status()
+        data = response.json().get("email", {})
+
+        deny = rules.get("deny", [])
+
+        if "INVALID" in deny and not data.get("valid", True): return False
+        if "FRAUD" in deny and data.get("fraud", False): return False
+        if "PROXIED_EMAIL" in deny and data.get("proxiedEmail", False): return False
+        if "FREE_SUBDOMAIN" in deny and data.get("freeSubdomain", False): return False
+        if "PERSONAL_EMAIL" in deny and not data.get("corporate", False): return False
+        if "CORPORATE_EMAIL" in deny and data.get("corporate", False): return False
+        if "NO_MX_RECORDS" in deny and len(data.get("plugins", {}).get("mxRecords", [])) == 0: return False
+        if "NO_REPLY_EMAIL" in deny and data.get("noReply", False): return False
+        if "ROLE_ACCOUNT" in deny and data.get("plugins", {}).get("roleAccount", False): return False
+        if "NO_REACHABLE" in deny and not data.get("plugins", {}).get("reachable", True): return False
+        if "HIGH_RISK_SCORE" in deny and data.get("plugins", {}).get("riskScore", 0) >= 80: return False
+        return True
+    except requests.RequestException as e: raise APIError(f"[Dymo API] {str(e)}")
+
 def send_email(token, data):
     if not data.get("from"): raise BadRequestError("You must provide an email address from which the following will be sent.")
     if not data.get("to"): raise BadRequestError("You must provide an email to be sent to.")
