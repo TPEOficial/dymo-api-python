@@ -1,5 +1,6 @@
 import requests
 from ..config import get_base_url
+from typing import Optional, Dict, Any, List
 from ..exceptions import APIError, BadRequestError
 
 def is_valid_data(token, data):
@@ -10,7 +11,7 @@ def is_valid_data(token, data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
-def is_valid_email(token: str | None, email: str, rules: dict | None = None) -> bool:
+def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
     """
     Validates the given email against the configured deny rules.
 
@@ -39,28 +40,36 @@ def is_valid_email(token: str | None, email: str, rules: dict | None = None) -> 
     plugins = [p for p in plugins if p is not None]
 
     try:
-        response = requests.post(
+        resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"email": email, "plugins": plugins},
             headers={"User-Agent": "DymoAPISDK/1.0.0", "Authorization": token}
         )
-        response.raise_for_status()
-        data = response.json().get("email", {})
+        resp.raise_for_status()
+        data = resp.json().get("email", {})
 
         deny = rules.get("deny", [])
+        reasons: List[str] = []
 
-        if "INVALID" in deny and not data.get("valid", True): return False
-        if "FRAUD" in deny and data.get("fraud", False): return False
-        if "PROXIED_EMAIL" in deny and data.get("proxiedEmail", False): return False
-        if "FREE_SUBDOMAIN" in deny and data.get("freeSubdomain", False): return False
-        if "PERSONAL_EMAIL" in deny and not data.get("corporate", False): return False
-        if "CORPORATE_EMAIL" in deny and data.get("corporate", False): return False
-        if "NO_MX_RECORDS" in deny and len(data.get("plugins", {}).get("mxRecords", [])) == 0: return False
-        if "NO_REPLY_EMAIL" in deny and data.get("noReply", False): return False
-        if "ROLE_ACCOUNT" in deny and data.get("plugins", {}).get("roleAccount", False): return False
-        if "NO_REACHABLE" in deny and not data.get("plugins", {}).get("reachable", True): return False
-        if "HIGH_RISK_SCORE" in deny and data.get("plugins", {}).get("riskScore", 0) >= 80: return False
-        return True
+        if "INVALID" in deny and not data.get("valid", True): reasons.append("INVALID")
+        if "FRAUD" in deny and data.get("fraud", False): reasons.append("FRAUD")
+        if "PROXIED_EMAIL" in deny and data.get("proxiedEmail", False): reasons.append("PROXIED_EMAIL")
+        if "FREE_SUBDOMAIN" in deny and data.get("freeSubdomain", False): reasons.append("FREE_SUBDOMAIN")
+        if "PERSONAL_EMAIL" in deny and not data.get("corporate", False): reasons.append("PERSONAL_EMAIL")
+        if "CORPORATE_EMAIL" in deny and data.get("corporate", False): reasons.append("CORPORATE_EMAIL")
+        if "NO_MX_RECORDS" in deny and len(data.get("plugins", {}).get("mxRecords", [])) == 0: reasons.append("NO_MX_RECORDS")
+        if "NO_REPLY_EMAIL" in deny and data.get("noReply", False): reasons.append("NO_REPLY_EMAIL")
+        if "ROLE_ACCOUNT" in deny and data.get("plugins", {}).get("roleAccount", False): reasons.append("ROLE_ACCOUNT")
+        if "NO_REACHABLE" in deny and not data.get("plugins", {}).get("reachable", True): reasons.append("NO_REACHABLE")
+        if "HIGH_RISK_SCORE" in deny and data.get("plugins", {}).get("riskScore", 0) >= 80: reasons.append("HIGH_RISK_SCORE")
+
+        return {
+            "email": email,
+            "allow": len(reasons) == 0,
+            "reasons": reasons,
+            "response": data
+        }
+
     except requests.RequestException as e: raise APIError(f"[Dymo API] {str(e)}")
 
 def send_email(token, data):
