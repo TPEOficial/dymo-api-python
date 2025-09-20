@@ -2,8 +2,27 @@ from enum import Enum
 from pydantic import BaseModel
 from typing import Dict, List, Union, Optional, Literal, Any
 
+ReputationPlugin = Literal["low", "medium", "high", "very-high", "education", "governmental", "unknown"]
+TyposquattingPlugin = Literal[0,1,2,3,4,5,6,7,8,9,10]
+
+class MxRecord(BaseModel):
+    priority: int
+    exchange: str
+
+class Plugins(BaseModel):
+    blocklist: Optional[bool] = None
+    compromiseDetector: Optional[bool] = None
+    mxRecords: Optional[List[MxRecord]] = None
+    nsfw: Optional[bool] = None
+    reputation: Optional[ReputationPlugin] = None
+    riskScore: Optional[float] = None
+    torNetwork: Optional[bool] = None
+    typosquatting: Optional[TyposquattingPlugin] = None
+    urlShortener: Optional[bool] = None
+
 class VerifyPlugins(Enum):
     COMPROMISE_DETECTOR = "compromiseDetector"
+    MX_RECORDS = "mxRecords"
     NSFW = "nsfw"
     REPUTATION = "reputation"
     RISK_SCORE = "riskScore"
@@ -137,7 +156,7 @@ class DataVerifierURL(BaseModel):
     customTLD: Optional[bool] = None
     url: Optional[str] = None
     domain: Optional[str] = None
-    plugins: Optional[Dict[str, str]] = None
+    plugins: Optional[Plugins] = None
 
 class DataVerifierEmail(BaseModel):
     valid: Optional[bool] = None
@@ -152,7 +171,7 @@ class DataVerifierEmail(BaseModel):
     customTLD: Optional[bool] = None
     domain: Optional[str] = None
     roleAccount: Optional[bool] = None
-    plugins: Optional[Dict[str, str]] = None
+    plugins: Optional[Plugins] = None
 
 class CarrierInfo(BaseModel):
     carrierName: str
@@ -174,7 +193,7 @@ class DataVerifierPhone(BaseModel):
     carrierInfo: Optional[CarrierInfo] = None
     country: Optional[str] = None
     countryCode: Optional[str] = None
-    plugins: Optional[Dict[str, str]] = None
+    plugins: Optional[Plugins] = None
 
 class DataVerifierDomain(BaseModel):
     valid: Optional[bool] = None
@@ -182,7 +201,7 @@ class DataVerifierDomain(BaseModel):
     freeSubdomain: Optional[bool] = None
     customTLD: Optional[bool] = None
     domain: Optional[str] = None
-    plugins: Optional[Dict[str, str]] = None
+    plugins: Optional[Plugins] = None
 
 class DataVerifierCreditCard(BaseModel):
     valid: Optional[bool] = None
@@ -190,7 +209,7 @@ class DataVerifierCreditCard(BaseModel):
     test: Optional[bool] = None
     type: Optional[str] = None
     creditCard: Optional[str] = None
-    plugins: Optional[Dict[str, str]] = None
+    plugins: Optional[Plugins] = None
 
 class DataVerifierIp(BaseModel):
     valid: bool
@@ -219,8 +238,7 @@ class DataVerifierIp(BaseModel):
     mobile: Optional[bool | str] = None
     proxy: Optional[bool | str] = None
     hosting: Optional[bool | str] = None
-    plugins: Optional[Dict[str, str]] = None
-
+    plugins: Optional[Plugins] = None
 
 class DataVerifierDevice(BaseModel):
     type: Optional[str] = None
