@@ -32,7 +32,11 @@ class DymoAPI:
         self.root_api_key = config.get("root_api_key", None)
         self.api_key = config.get("api_key", None)
         self.server_email_config = config.get("server_email_config", None)
-        self.rules = config.get("rules", {"email": {"deny": ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]}})
+        self.rules = {
+            "email": {"deny": ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]},
+            "sensitiveInfo": {"deny": ["EMAIL", "PHONE", "CREDIT_CARD"]},
+            **(config.get("rules") or {})
+        }
         self.base_url = config.get("base_url", "https://api.tpeoficial.com")
 
         set_base_url(self.base_url)
