@@ -1,11 +1,25 @@
 import re, requests
 from urllib.parse import quote
-from ..config import get_base_url, set_base_url
+from ..config import get_base_url
+from ..utils.decorators import deprecated
 from ..exceptions import APIError, BadRequestError
 
 headers = {"User-Agent": "DymoAPISDK/1.0.0"}
 
 def get_prayer_times(data):
+    """
+    Gets the prayer times for a given latitude and longitude.
+
+    Args:
+        data (dict): Data containing the latitude and longitude.
+
+    Returns:
+        dict: Prayer times.
+
+    Raises:
+        BadRequestError: If the input is not provided.
+        APIError: If the request fails.
+    """
     if not data.lat or not data.lon: raise BadRequestError("You must provide a latitude and longitude.")
     params = {
         "lat": data.get("lat"),
@@ -17,7 +31,21 @@ def get_prayer_times(data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
+@deprecated("satinize")
 def satinizer(data):
+    """
+    Sanitizes the given input according to the Dymo API standard.
+
+    Args:
+        data (dict): Data containing the input to sanitize.
+
+    Returns:
+        dict: Sanitized input.
+
+    Raises:
+        BadRequestError: If the input is not provided.
+        APIError: If the request fails.
+    """
     try:
         input_value = data.get("input")
         if input_value is None: raise BadRequestError("You must specify at least the input.")
@@ -26,7 +54,41 @@ def satinizer(data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
+def satinize(input_value):
+    """
+    Sanitizes the given input according to the Dymo API standard.
+
+    Args:
+        input (str): The input to sanitize.
+
+    Returns:
+        dict: Sanitized input.
+
+    Raises:
+        BadRequestError: If the input is not provided.
+        APIError: If the request fails.
+    """
+    try:
+        if input_value is None: raise BadRequestError("You must specify at least the input.")
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
+
 def is_valid_pwd(data):
+    """
+    Validates the given password against the configured deny rules.
+
+    Args:
+        data (dict): Data containing the password to validate, optionally an email address, a list of banned words and a minimum and maximum length.
+
+    Returns:
+        dict: Validation result.
+
+    Raises:
+        BadRequestError: If the input is not provided or is invalid.
+        APIError: If the request fails.
+    """
     try:
         email = data.get("email")
         password = data.get("password")
@@ -57,6 +119,19 @@ def is_valid_pwd(data):
     except requests.RequestException as e: raise APIError(str(e))
 
 def new_url_encrypt(url):
+    """
+    Encrypts the given URL.
+
+    Args:
+        url (str): The URL to encrypt.
+
+    Returns:
+        dict: Encrypted URL.
+
+    Raises:
+        BadRequestError: If the input is not provided or is invalid.
+        APIError: If the request fails.
+    """
     try:
         if url is None or not (url.startswith("https://") or url.startswith("http://")): raise BadRequestError("You must provide a valid url.")
         response = requests.get(f"{get_base_url()}/v1/public/url-encrypt", params={"url": url}, headers=headers)
