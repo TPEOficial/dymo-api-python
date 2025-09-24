@@ -51,7 +51,13 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
         deny = rules.get("deny", [])
         reasons: List[str] = []
 
-        if "INVALID" in deny and not data.get("valid", True): reasons.append("INVALID")
+        if "INVALID" in deny and not data.get("valid", True):
+            return {
+                "email": email,
+                "allow": False,
+                "reasons": ["INVALID"],
+                "response": data
+            }
         if "FRAUD" in deny and data.get("fraud", False): reasons.append("FRAUD")
         if "PROXIED_EMAIL" in deny and data.get("proxiedEmail", False): reasons.append("PROXIED_EMAIL")
         if "FREE_SUBDOMAIN" in deny and data.get("freeSubdomain", False): reasons.append("FREE_SUBDOMAIN")
