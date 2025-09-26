@@ -50,6 +50,7 @@ class Validator(BaseModel):
     ip: Optional[str] = None
     wallet: Optional[str] = None
     userAgent: Optional[str] = None
+    iban: Optional[str] = None
     plugins: Optional[List[VerifyPlugins]] = None
 
 class UrlEncryptResponse(BaseModel):
@@ -258,6 +259,19 @@ class DataVerifierUserAgent(BaseModel):
     device: DataVerifierDevice
     plugins: Optional[Dict[str, Any]] = None
 
+class DataVerifierIBAN(BaseModel):
+    valid: bool
+    fraud: Optional[bool] = None
+    iban: Optional[str] = None
+    bban: Optional[str] = None
+    bic: Optional[str] = "unknown"
+    country: Optional[str] = None
+    countryCode: Optional[str] = None
+    accountNumber: Optional[str] = None
+    branchIdentifier: Optional[str] = None
+    bankIdentifier: Optional[str] = None
+    plugins: Optional[Dict[str, Any]] = None
+
 class DataVerifierResponse(BaseModel):
     url: Optional[DataVerifierURL]
     email: Optional[DataVerifierEmail]
@@ -266,6 +280,7 @@ class DataVerifierResponse(BaseModel):
     creditCard: Optional[DataVerifierCreditCard]
     ip: Optional[DataVerifierIp]
     userAgent: Optional[DataVerifierUserAgent]
+    iban: Optional[DataVerifierIBAN]
 
 class SRNG(BaseModel):
     min: int
