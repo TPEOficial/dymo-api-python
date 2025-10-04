@@ -6,7 +6,7 @@ from ..exceptions import APIError, BadRequestError
 def is_valid_data(token, data):
     if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.46", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.47", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -20,7 +20,7 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
         email (str): Email to validate.
         rules (dict | None): Optional rules dict with 'deny' list. Defaults to
             ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"].
-            ⚠️ "NO_MX_RECORDS", "HIGH_RISK_SCORE" and "NO_REACHABLE" are PREMIUM.
+            ⚠️ "NO_MX_RECORDS", "HIGH_RISK_SCORE", "NO_GRAVATAR" and "NO_REACHABLE" are PREMIUM.
 
     Returns:
         bool: True if the email passes all deny rules, False otherwise.
@@ -35,7 +35,8 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
     plugins = [
         "mxRecords" if "NO_MX_RECORDS" in rules["deny"] else None,
         "reachability" if "NO_REACHABLE" in rules["deny"] else None,
-        "riskScore" if "HIGH_RISK_SCORE" in rules["deny"] else None
+        "riskScore" if "HIGH_RISK_SCORE" in rules["deny"] else None,
+        "gravatar" if "NO_GRAVATAR" in rules["deny"] else None
     ]
     plugins = [p for p in plugins if p is not None]
 
@@ -43,7 +44,7 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
         resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"email": email, "plugins": plugins},
-            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.46", "Authorization": token}
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.47", "Authorization": token}
         )
         resp.raise_for_status()
         data = resp.json().get("email", {})
@@ -68,6 +69,7 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
         if "ROLE_ACCOUNT" in deny and data.get("plugins", {}).get("roleAccount", False): reasons.append("ROLE_ACCOUNT")
         if "NO_REACHABLE" in deny and not data.get("plugins", {}).get("reachable", True): reasons.append("NO_REACHABLE")
         if "HIGH_RISK_SCORE" in deny and data.get("plugins", {}).get("riskScore", 0) >= 80: reasons.append("HIGH_RISK_SCORE")
+        if "NO_GRAVATAR" in deny and isinstance(data.get("plugins", {}).get("gravatarUrl"), str): reasons.append("NO_GRAVATAR")
 
         return {
             "email": email,
@@ -84,7 +86,7 @@ def send_email(token, data):
     if not data.get("subject"): raise BadRequestError("You must provide a subject for the email to be sent.")
     if not data.get("html"): raise BadRequestError("You must provide HTML.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.46", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.47", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -100,7 +102,7 @@ def get_random(token, data):
     if data.min < -1000000000 or data.min > 1000000000: raise BadRequestError("'min' must be an integer in the interval [-1000000000}, 1000000000].")
     if data.max < -1000000000 or data.max > 1000000000: raise BadRequestError("'max' must be an integer in the interval [-1000000000}, 1000000000].")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.46", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.47", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))

@@ -11,6 +11,7 @@ class MxRecord(BaseModel):
 
 class Plugins(BaseModel):
     blocklist: Optional[bool] = None
+    gravatarUrl: Optional[str] = None
     compromiseDetector: Optional[bool] = None
     mxRecords: Optional[List[MxRecord]] = None
     nsfw: Optional[bool] = None
@@ -21,7 +22,9 @@ class Plugins(BaseModel):
     urlShortener: Optional[bool] = None
 
 class VerifyPlugins(Enum):
+    BLOCKLIST = "blocklist"
     COMPROMISE_DETECTOR = "compromiseDetector"
+    GRAVATAR_URL = "gravatarUrl"
     MX_RECORDS = "mxRecords"
     NSFW = "nsfw"
     REPUTATION = "reputation"
@@ -29,7 +32,6 @@ class VerifyPlugins(Enum):
     TOR_NETWORK = "torNetwork"
     TYPOSQUATTING = "typosquatting"
     URL_SHORTENER = "urlShortener"
-    BLOCKLIST = "blocklist"
 
 class PhoneData(BaseModel):
     iso: Optional[str] = None
