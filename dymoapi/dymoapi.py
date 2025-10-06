@@ -22,6 +22,7 @@ class DymoAPI:
                                             the cloud server. Defaults to False.
             - options["server_email_config"] (dict, optional): 
                                         The server email config. Defaults to None.
+            - options["rules"] (dict, optional): The rules config. Defaults to None.
 
         Example:
             dymo_api = DymoAPI({
