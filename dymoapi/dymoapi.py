@@ -34,6 +34,7 @@ class DymoAPI:
         self.server_email_config = config.get("server_email_config", None)
         self.rules = {
             "email": {"deny": ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]},
+            "phone": {"deny": ["FRAUD", "INVALID"]},
             "sensitive_info": {"deny": ["EMAIL", "PHONE", "CREDIT_CARD"]},
             **(config.get("rules") or {})
         }

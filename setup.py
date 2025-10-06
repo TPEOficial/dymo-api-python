@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="dymoapi",
-    version="0.0.48",
+    version="0.0.49",
     packages=find_packages(),
     description="Dymo Python API library.",
     long_description=open("README.md").read(),
