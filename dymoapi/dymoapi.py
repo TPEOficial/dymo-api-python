@@ -111,10 +111,40 @@ class DymoAPI:
             >>> )
 
         See also:
-            https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier
+            https://docs.tpeoficial.com/docs/dymo-api/private/email-validation
         """
         rules_to_use = rules or self.rules.get("email")
         return self._get_function("private", "is_valid_email")(email, rules_to_use)
+    
+    def is_valid_phone(self, phone: str, rules: dict | None = None) -> bool:
+        """
+        Wrapper for the private phone validation function.
+
+        Calls the internal `is_valid_phone` function with the provided phone and deny rules,
+        returning True or False according to the validation result.
+
+        Args:
+            phone (str): The phone number to validate.
+            rules (dict, optional): Validation rules object with key "deny" (list of deny rules). 
+                ⚠️ Some deny rules are PREMIUM: "HIGH_RISK_SCORE".
+
+        Returns:
+            bool: True if the phone passes validation, False otherwise.
+
+        Raises:
+            APIError: If the underlying validation function fails or the API key is missing.
+
+        Example:
+            >>> valid = dymoClient.is_valid_phone(
+            >>>     "user@example.com",
+            >>>     rules={"deny": ["FRAUD", "INVALID"]}
+            >>> )
+
+        See also:
+            https://docs.tpeoficial.com/docs/dymo-api/private/phone-validation
+        """
+        rules_to_use = rules or self.rules.get("phone")
+        return self._get_function("private", "is_valid_phone")(phone, rules_to_use)
     
     def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
         """
