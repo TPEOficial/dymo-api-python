@@ -136,7 +136,7 @@ class DymoAPI:
 
         Example:
             >>> valid = dymoClient.is_valid_phone(
-            >>>     "user@example.com",
+            >>>     "+34617509462",
             >>>     rules={"deny": ["FRAUD", "INVALID"]}
             >>> )
 

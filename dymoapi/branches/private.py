@@ -8,7 +8,7 @@ from ..exceptions import APIError, BadRequestError
 def is_valid_data(token, data):
     if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.50", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.51", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -16,7 +16,7 @@ def is_valid_data(token, data):
 def is_valid_data_raw(token, data):
     if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.50", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.51", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -54,7 +54,7 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
         resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"email": email, "plugins": plugins},
-            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.50", "Authorization": token}
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.51", "Authorization": token}
         )
         resp.raise_for_status()
         data = resp.json().get("email", {})
@@ -120,7 +120,7 @@ def is_valid_phone(token: Optional[str], phone: str, rules: Optional[Dict[str, L
         resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"phone": phone, "plugins": plugins},
-            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.50", "Authorization": token}
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.51", "Authorization": token}
         )
         resp.raise_for_status()
         data = resp.json().get("phone", {})
@@ -153,7 +153,7 @@ def send_email(token, data):
     if not data.get("subject"): raise BadRequestError("You must provide a subject for the email to be sent.")
     if not data.get("html"): raise BadRequestError("You must provide HTML.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.50", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.51", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -169,7 +169,7 @@ def get_random(token, data):
     if data.min < -1000000000 or data.min > 1000000000: raise BadRequestError("'min' must be an integer in the interval [-1000000000}, 1000000000].")
     if data.max < -1000000000 or data.max > 1000000000: raise BadRequestError("'max' must be an integer in the interval [-1000000000}, 1000000000].")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.50", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.51", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
