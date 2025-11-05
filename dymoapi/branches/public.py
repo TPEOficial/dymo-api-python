@@ -4,7 +4,7 @@ from ..config import get_base_url
 from ..utils.decorators import deprecated
 from ..exceptions import APIError, BadRequestError
 
-headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.53"}
+headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.54"}
 
 def get_prayer_times(data):
     """
