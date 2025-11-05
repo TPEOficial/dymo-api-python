@@ -35,6 +35,7 @@ class DymoAPI:
         self.server_email_config = config.get("server_email_config", None)
         self.rules = {
             "email": {"deny": ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]},
+            "ip": {"deny": ["FRAUD", "INVALID", "TOR_NETWORK"]},
             "phone": {"deny": ["FRAUD", "INVALID"]},
             "sensitive_info": {"deny": ["EMAIL", "PHONE", "CREDIT_CARD"]},
             **(config.get("rules") or {})
@@ -115,6 +116,36 @@ class DymoAPI:
         """
         rules_to_use = rules or self.rules.get("email")
         return self._get_function("private", "is_valid_email")(email, rules_to_use)
+    
+    def is_valid_ip(self, ip: str, rules: dict | None = None) -> bool:
+        """
+        Wrapper for the private IP validation function.
+
+        Calls the internal `is_valid_ip` function with the provided IP and deny rules,
+        returning True or False according to the validation result.
+
+        Args:
+            ip (str): The IP address to validate.
+            rules (dict, optional): Validation rules object with key "deny" (list of deny rules). 
+                ⚠️ Some deny rules are PREMIUM: "TOR_NETWORK", "HIGH_RISK_SCORE".
+
+        Returns:
+            bool: True if the IP passes validation, False otherwise.
+
+        Raises:
+            APIError: If the underlying validation function fails or the API key is missing.
+
+        Example:
+            >>> valid = dymoClient.is_valid_ip(
+            >>>     "52.94.236.248",
+            >>>     rules={"deny": ["FRAUD", "TOR_NETWORK", "COUNTRY:RU"]}
+            >>> )
+
+        See also:
+            https://docs.tpeoficial.com/docs/dymo-api/private/ip-validation
+        """
+        rules_to_use = rules or self.rules.get("ip")
+        return self._get_function("private", "is_valid_ip")(ip, rules_to_use)
     
     def is_valid_phone(self, phone: str, rules: dict | None = None) -> bool:
         """
