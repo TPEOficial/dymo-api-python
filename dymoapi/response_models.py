@@ -304,3 +304,6 @@ class EmailStatus(BaseModel):
 
 class ExtractWithTextlyResponse(BaseModel):
     __root__: Any
+
+class TextlyResponse(BaseModel):
+    __root__: Any
