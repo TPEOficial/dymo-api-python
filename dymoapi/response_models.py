@@ -1,6 +1,7 @@
+from __future__ import annotations
 from enum import Enum
-from pydantic import BaseModel
-from typing import Dict, List, Union, Optional, Literal, Any
+from typing import Any, Dict, List, Union, Optional, Literal
+from pydantic import BaseModel, Field
 
 ReputationPlugin = Literal["low", "medium", "high", "very-high", "education", "governmental", "unknown"]
 TyposquattingPlugin = Literal[0,1,2,3,4,5,6,7,8,9,10]
@@ -10,16 +11,16 @@ class MxRecord(BaseModel):
     exchange: str
 
 class Plugins(BaseModel):
-    blocklist: Optional[bool] = None
-    gravatarUrl: Optional[str] = None
-    compromiseDetector: Optional[bool] = None
-    mxRecords: Optional[List[MxRecord]] = None
-    nsfw: Optional[bool] = None
-    reputation: Optional[ReputationPlugin] = None
-    riskScore: Optional[float] = None
-    torNetwork: Optional[bool] = None
-    typosquatting: Optional[TyposquattingPlugin] = None
-    urlShortener: Optional[bool] = None
+    blocklist: Optional[bool]
+    gravatarUrl: Optional[str]
+    compromiseDetector: Optional[bool]
+    mxRecords: Optional[List[MxRecord]]
+    nsfw: Optional[bool]
+    reputation: Optional[ReputationPlugin]
+    riskScore: Optional[float]
+    torNetwork: Optional[bool]
+    typosquatting: Optional[TyposquattingPlugin]
+    urlShortener: Optional[bool]
 
 class VerifyPlugins(Enum):
     BLOCKLIST = "blocklist"
@@ -34,26 +35,26 @@ class VerifyPlugins(Enum):
     URL_SHORTENER = "urlShortener"
 
 class PhoneData(BaseModel):
-    iso: Optional[str] = None
+    iso: Optional[str]
     phone: str
 
 class CreditCardData(BaseModel):
     pan: Union[str, int]
-    expirationDate: Optional[str] = None
-    cvc: Optional[Union[str, int]] = None
-    cvv: Optional[Union[str, int]] = None
+    expirationDate: Optional[str]
+    cvc: Optional[Union[str, int]]
+    cvv: Optional[Union[str, int]]
 
 class Validator(BaseModel):
-    url: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[Union[PhoneData, str]] = None
-    domain: Optional[str] = None
-    creditCard: Optional[Union[str, CreditCardData]] = None
-    ip: Optional[str] = None
-    wallet: Optional[str] = None
-    userAgent: Optional[str] = None
-    iban: Optional[str] = None
-    plugins: Optional[List[VerifyPlugins]] = None
+    url: Optional[str]
+    email: Optional[str]
+    phone: Optional[Union[PhoneData, str]]
+    domain: Optional[str]
+    creditCard: Optional[Union[str, CreditCardData]]
+    ip: Optional[str]
+    wallet: Optional[str]
+    userAgent: Optional[str]
+    iban: Optional[str]
+    plugins: Optional[List[VerifyPlugins]]
 
 class UrlEncryptResponse(BaseModel):
     original: str
@@ -61,11 +62,11 @@ class UrlEncryptResponse(BaseModel):
     encrypt: str
 
 class IsValidPwdData(BaseModel):
-    email: Optional[str] = None
-    password: Optional[str] = None
-    bannedWords: Optional[Union[str, List[str]]] = None
-    min: Optional[int] = None
-    max: Optional[int] = None
+    email: Optional[str]
+    password: Optional[str]
+    bannedWords: Optional[Union[str, List[str]]]
+    min: Optional[int]
+    max: Optional[int]
 
 class IsValidPwdDetails(BaseModel):
     validation: str
@@ -77,7 +78,7 @@ class IsValidPwdResponse(BaseModel):
     details: List[IsValidPwdDetails]
 
 class InputSanitizerData(BaseModel):
-    input: Optional[str] = None
+    input: Optional[str]
 
 class SatinizerFormats(BaseModel):
     ascii: bool
@@ -129,8 +130,8 @@ class SatinizerResponse(BaseModel):
     includes: SatinizerIncludes
 
 class PrayerTimesData(BaseModel):
-    lat: Optional[float] = None
-    lon: Optional[float] = None
+    lat: Optional[float]
+    lon: Optional[float]
 
 class PrayerTimes(BaseModel):
     coordinates: str
@@ -153,28 +154,28 @@ class PrayerTimesResponse(BaseModel):
     prayerTimesByTimezone: List[PrayerTimesByTimezone]
 
 class DataVerifierURL(BaseModel):
-    valid: Optional[bool] = None
-    fraud: Optional[bool] = None
-    freeSubdomain: Optional[bool] = None
-    customTLD: Optional[bool] = None
-    url: Optional[str] = None
-    domain: Optional[str] = None
-    plugins: Optional[Plugins] = None
+    valid: Optional[bool]
+    fraud: Optional[bool]
+    freeSubdomain: Optional[bool]
+    customTLD: Optional[bool]
+    url: Optional[str]
+    domain: Optional[str]
+    plugins: Optional[Plugins]
 
 class DataVerifierEmail(BaseModel):
-    valid: Optional[bool] = None
-    fraud: Optional[bool] = None
-    proxiedEmail: Optional[bool] = None
-    freeSubdomain: Optional[bool] = None
-    corporate: Optional[bool] = None
-    email: Optional[str] = None
-    realUser: Optional[str] = None
-    didYouMean: Optional[Union[str, bool]] = None
-    noReply: Optional[bool] = None
-    customTLD: Optional[bool] = None
-    domain: Optional[str] = None
-    roleAccount: Optional[bool] = None
-    plugins: Optional[Plugins] = None
+    valid: Optional[bool]
+    fraud: Optional[bool]
+    proxiedEmail: Optional[bool]
+    freeSubdomain: Optional[bool]
+    corporate: Optional[bool]
+    email: Optional[str]
+    realUser: Optional[str]
+    didYouMean: Optional[Union[str, bool]]
+    noReply: Optional[bool]
+    customTLD: Optional[bool]
+    domain: Optional[str]
+    roleAccount: Optional[bool]
+    plugins: Optional[Plugins]
 
 class CarrierInfo(BaseModel):
     carrierName: str
@@ -183,96 +184,96 @@ class CarrierInfo(BaseModel):
     carrierCountryCode: str
 
 class DataVerifierPhone(BaseModel):
-    valid: Optional[bool] = None
-    fraud: Optional[bool] = None
-    phone: Optional[str] = None 
-    prefix: Optional[str] = None
-    number: Optional[str] = None
+    valid: Optional[bool]
+    fraud: Optional[bool]
+    phone: Optional[str] 
+    prefix: Optional[str]
+    number: Optional[str]
     lineType: Literal[
         "PREMIUM_RATE", "TOLL_FREE", "SHARED_COST", "VOIP", "PERSONAL_NUMBER",
         "PAGER", "UAN", "VOICEMAIL", "FIXED_LINE_OR_MOBILE", "FIXED_LINE",
         "MOBILE", "Unknown"
     ]
-    carrierInfo: Optional[CarrierInfo] = None
-    country: Optional[str] = None
-    countryCode: Optional[str] = None
-    plugins: Optional[Plugins] = None
+    carrierInfo: Optional[CarrierInfo]
+    country: Optional[str]
+    countryCode: Optional[str]
+    plugins: Optional[Plugins]
 
 class DataVerifierDomain(BaseModel):
-    valid: Optional[bool] = None
-    fraud: Optional[bool] = None
-    freeSubdomain: Optional[bool] = None
-    customTLD: Optional[bool] = None
-    domain: Optional[str] = None
-    plugins: Optional[Plugins] = None
+    valid: Optional[bool]
+    fraud: Optional[bool]
+    freeSubdomain: Optional[bool]
+    customTLD: Optional[bool]
+    domain: Optional[str]
+    plugins: Optional[Plugins]
 
 class DataVerifierCreditCard(BaseModel):
-    valid: Optional[bool] = None
-    fraud: Optional[bool] = None
-    test: Optional[bool] = None
-    type: Optional[str] = None
-    creditCard: Optional[str] = None
-    plugins: Optional[Plugins] = None
+    valid: Optional[bool]
+    fraud: Optional[bool]
+    test: Optional[bool]
+    type: Optional[str]
+    creditCard: Optional[str]
+    plugins: Optional[Plugins]
 
 class DataVerifierIp(BaseModel):
     valid: bool
-    type: Optional[str] = None
-    _class: Optional[str] = None
-    fraud: Optional[bool] = None
-    ip: Optional[str] = None
-    continent: Optional[str] = None
-    continentCode: Optional[str] = None
-    country: Optional[str] = None
-    countryCode: Optional[str] = None
-    region: Optional[str] = None
-    regionName: Optional[str] = None
-    city: Optional[str] = None
-    district: Optional[str] = None
-    zipCode: Optional[str] = None
-    lat: Optional[float] = None
-    lon: Optional[float] = None
-    timezone: Optional[str] = None
-    offset: Optional[float | str] = None
-    currency: Optional[str] = None
-    isp: Optional[str] = None
-    org: Optional[str] = None
-    _as: Optional[str] = None
-    asname: Optional[str] = None
-    mobile: Optional[bool | str] = None
-    proxy: Optional[bool | str] = None
-    hosting: Optional[bool | str] = None
-    plugins: Optional[Plugins] = None
+    type: Optional[str]
+    _class: Optional[str]
+    fraud: Optional[bool]
+    ip: Optional[str]
+    continent: Optional[str]
+    continentCode: Optional[str]
+    country: Optional[str]
+    countryCode: Optional[str]
+    region: Optional[str]
+    regionName: Optional[str]
+    city: Optional[str]
+    district: Optional[str]
+    zipCode: Optional[str]
+    lat: Optional[float]
+    lon: Optional[float]
+    timezone: Optional[str]
+    offset: Optional[float | str]
+    currency: Optional[str]
+    isp: Optional[str]
+    org: Optional[str]
+    _as: Optional[str]
+    asname: Optional[str]
+    mobile: Optional[bool | str]
+    proxy: Optional[bool | str]
+    hosting: Optional[bool | str]
+    plugins: Optional[Plugins]
 
 class DataVerifierDevice(BaseModel):
-    type: Optional[str] = None
-    brand: Optional[str] = None
+    type: Optional[str]
+    brand: Optional[str]
 
 class DataVerifierUserAgent(BaseModel):
     valid: bool
-    type: Optional[str] = None
-    clientSlug: Optional[str] = None
-    clientName: Optional[str] = None
-    version: Optional[str] = None
-    userAgent: Optional[str] = None
-    fraud: Optional[bool] = None
-    bot: Optional[bool] = None
-    info: Optional[str] = None
-    os: Optional[str] = None
+    type: Optional[str]
+    clientSlug: Optional[str]
+    clientName: Optional[str]
+    version: Optional[str]
+    userAgent: Optional[str]
+    fraud: Optional[bool]
+    bot: Optional[bool]
+    info: Optional[str]
+    os: Optional[str]
     device: DataVerifierDevice
-    plugins: Optional[Dict[str, Any]] = None
+    plugins: Optional[Dict[str, Any]]
 
 class DataVerifierIBAN(BaseModel):
     valid: bool
-    fraud: Optional[bool] = None
-    iban: Optional[str] = None
-    bban: Optional[str] = None
+    fraud: Optional[bool]
+    iban: Optional[str]
+    bban: Optional[str]
     bic: Optional[str] = "unknown"
-    country: Optional[str] = None
-    countryCode: Optional[str] = None
-    accountNumber: Optional[str] = None
-    branchIdentifier: Optional[str] = None
-    bankIdentifier: Optional[str] = None
-    plugins: Optional[Dict[str, Any]] = None
+    country: Optional[str]
+    countryCode: Optional[str]
+    accountNumber: Optional[str]
+    branchIdentifier: Optional[str]
+    bankIdentifier: Optional[str]
+    plugins: Optional[Dict[str, Any]]
 
 class DataVerifierResponse(BaseModel):
     url: Optional[DataVerifierURL]
@@ -287,7 +288,7 @@ class DataVerifierResponse(BaseModel):
 class SRNG(BaseModel):
     min: int
     max: int
-    quantity: Optional[int] = None
+    quantity: Optional[int]
 
 class SRNGResponse(BaseModel):
     values: List[Dict[str, Union[int, float]]]
@@ -295,15 +296,30 @@ class SRNGResponse(BaseModel):
 
 class SendEmailResponse(BaseModel):
     status: Union[bool, str]
-    error: Optional[str] = None
-    warning: Optional[str] = None
+    error: Optional[str]
+    warning: Optional[str]
 
 class EmailStatus(BaseModel):
     status: bool
-    error: Optional[str] = None
+    error: Optional[str]
 
-class ExtractWithTextlyResponse(BaseModel):
-    __root__: Any
+class JsonSchemaProperty(BaseModel):
+    type: Literal["string", "number", "boolean", "array", "object"]
+    items: Optional[JsonSchemaProperty]
+    properties: Optional[Dict[str, JsonSchemaProperty]]
+    required: Optional[List[str]]
+    description: Optional[str]
+    format: Optional[str]
+    enum: Optional[List[Any]]
+    minimum: Optional[float]
+    maximum: Optional[float]
+    minLength: Optional[int]
+    maxLength: Optional[int]
+    pattern: Optional[str]
+
+class Textly(BaseModel):
+    data: str = Field(..., description="Input text")
+    format: Dict[str, JsonSchemaProperty] = Field(..., description="Output schema")
 
 class TextlyResponse(BaseModel):
     __root__: Any
