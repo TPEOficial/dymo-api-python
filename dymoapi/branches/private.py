@@ -1,32 +1,27 @@
-import httpx
+import requests
 from ..config import get_base_url
 from ..utils.decorators import deprecated
 from typing import Optional, Dict, Any, List
 from ..exceptions import APIError, BadRequestError
 
 @deprecated("is_valid_data_raw")
-async def is_valid_data(token, data):
-    return await is_valid_data_raw(token, data)
-
-async def is_valid_data_raw(token: str, data: dict) -> dict:
+def is_valid_data(token, data):
     if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/v1/private/secure/verify",
-                json=data,
-                headers={
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token})
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
-async def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
+def is_valid_data_raw(token, data):
+    if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
+    try:
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token})
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
+
+def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
     """
     Validates the given email against the configured deny rules.
 
@@ -56,17 +51,11 @@ async def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[
     plugins = [p for p in plugins if p is not None]
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/v1/private/secure/verify",
-                json={"email": email, "plugins": plugins},
-                headers={
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
+        resp = requests.post(
+            f"{get_base_url()}/v1/private/secure/verify",
+            json={"email": email, "plugins": plugins},
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token}
+        )
         resp.raise_for_status()
         data = resp.json().get("email", {})
 
@@ -99,9 +88,9 @@ async def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[
             "response": data
         }
 
-    except httpx.RequestError as e: raise APIError(f"[Dymo API] {str(e)}")
+    except requests.RequestException as e: raise APIError(f"[Dymo API] {str(e)}")
 
-async def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
+def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
     """
     Validates the given IP against the configured deny rules.
 
@@ -129,17 +118,11 @@ async def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, L
     plugins = [p for p in plugins if p is not None]
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/v1/private/secure/verify",
-                json={"email": ip, "plugins": plugins},
-                headers={
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
+        resp = requests.post(
+            f"{get_base_url()}/v1/private/secure/verify",
+            json={"email": ip, "plugins": plugins},
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token}
+        )
         resp.raise_for_status()
         data = resp.json().get("ip", {})
 
@@ -170,9 +153,9 @@ async def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, L
             "response": data
         }
 
-    except httpx.RequestError as e: raise APIError(f"[Dymo API] {str(e)}")
+    except requests.RequestException as e: raise APIError(f"[Dymo API] {str(e)}")
 
-async def is_valid_phone(token: Optional[str], phone: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
+def is_valid_phone(token: Optional[str], phone: str, rules: Optional[Dict[str, List[str]]] = None) -> Dict[str, Any]:
     """
     Validates the given phone against the configured deny rules.
 
@@ -199,17 +182,11 @@ async def is_valid_phone(token: Optional[str], phone: str, rules: Optional[Dict[
     plugins = [p for p in plugins if p is not None]
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/v1/private/secure/verify",
-                json={"phone": phone, "plugins": plugins},
-                headers={
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
+        resp = requests.post(
+            f"{get_base_url()}/v1/private/secure/verify",
+            json={"phone": phone, "plugins": plugins},
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token}
+        )
         resp.raise_for_status()
         data = resp.json().get("phone", {})
 
@@ -239,30 +216,20 @@ async def is_valid_phone(token: Optional[str], phone: str, rules: Optional[Dict[
             "response": data
         }
 
-    except httpx.RequestError as e: raise APIError(f"[Dymo API] {str(e)}")
+    except requests.RequestException as e: raise APIError(f"[Dymo API] {str(e)}")
 
-async def send_email(token, data):
+def send_email(token, data):
     if not data.get("from"): raise BadRequestError("You must provide an email address from which the following will be sent.")
     if not data.get("to"): raise BadRequestError("You must provide an email to be sent to.")
     if not data.get("subject"): raise BadRequestError("You must provide a subject for the email to be sent.")
     if not data.get("html"): raise BadRequestError("You must provide HTML.")
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/v1/private/sender/sendEmail",
-                json=data,
-                headers={
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token})
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
-async def get_random(token, data):
+def get_random(token, data):
     if not data.get("from"): raise BadRequestError("You must provide an email address from which the following will be sent.")
     if not data.get("to"): raise BadRequestError("You must provide an email to be sent to.")
     if not data.get("subject"): raise BadRequestError("You must provide a subject for the email to be sent.")
@@ -273,38 +240,26 @@ async def get_random(token, data):
     if data.min < -1000000000 or data.min > 1000000000: raise BadRequestError("'min' must be an integer in the interval [-1000000000}, 1000000000].")
     if data.max < -1000000000 or data.max > 1000000000: raise BadRequestError("'max' must be an integer in the interval [-1000000000}, 1000000000].")
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/v1/private/srng",
-                json=data,
-                headers={
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61", "Authorization": token})
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
-async def extract_with_textly(token: str, data: dict) -> dict:
+
+def extract_with_textly(token: str, data: dict) -> dict:
     if not data.get("data"): raise BadRequestError("No data provided.")
     if not data.get("format"): raise BadRequestError("No format provided.")
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{get_base_url()}/private/textly/extract",
-                json=data,
-                headers={
-                    "Content-Type": "application/json",
-                    "User-Agent": "DymoAPISDK/1.0.0",
-                    "X-Dymo-SDK-Env": "Python",
-                    "X-Dymo-SDK-Version": "0.0.60",
-                    "Authorization": token
-                }
-            )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.post(
+            f"{get_base_url()}/private/textly/extract",
+            json=data,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "DymoAPISDK/1.0.0",
+                "Authorization": token
+            }
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))

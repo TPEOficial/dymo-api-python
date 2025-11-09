@@ -1,12 +1,12 @@
-import re, httpx
+import re, requests
 from urllib.parse import quote
 from ..config import get_base_url
 from ..utils.decorators import deprecated
 from ..exceptions import APIError, BadRequestError
 
-headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.60"}
+headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61"}
 
-async def get_prayer_times(data):
+def get_prayer_times(data):
     """
     Gets the prayer times for a given latitude and longitude.
 
@@ -26,14 +26,13 @@ async def get_prayer_times(data):
         "lon": data.get("lon")
     }
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(f"{get_base_url()}/v1/public/islam/prayertimes", params=params, headers=headers)
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.get(f"{get_base_url()}/v1/public/islam/prayertimes", params=params)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
 @deprecated("satinize")
-async def satinizer(data):
+def satinizer(data):
     """
     Sanitizes the given input according to the Dymo API standard.
 
@@ -50,17 +49,12 @@ async def satinizer(data):
     try:
         input_value = data.get("input")
         if input_value is None: raise BadRequestError("You must specify at least the input.")
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{get_base_url()}/v1/public/inputSatinizer",
-                params={"input": quote(input_value)},
-                headers=headers
-            )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
-async def satinize(input_value):
+def satinize(input_value):
     """
     Sanitizes the given input according to the Dymo API standard.
 
@@ -76,17 +70,12 @@ async def satinize(input_value):
     """
     try:
         if input_value is None: raise BadRequestError("You must specify at least the input.")
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{get_base_url()}/v1/public/inputSatinizer",
-                params={"input": quote(input_value)},
-                headers=headers
-            )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
-async def is_valid_pwd(data):
+def is_valid_pwd(data):
     """
     Validates the given password against the configured deny rules.
 
@@ -124,13 +113,12 @@ async def is_valid_pwd(data):
         if max_length is not None:
             if not isinstance(max_length, int) or max_length < 32 or max_length > 100: raise BadRequestError("If you provide a maximum it must be valid.")
             params["max"] = max_length
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(f"{get_base_url()}/v1/public/validPwd", params=params, headers=headers)
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.get(f"{get_base_url()}/v1/public/validPwd", params=params, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
 
-async def new_url_encrypt(url):
+def new_url_encrypt(url):
     """
     Encrypts the given URL.
 
@@ -146,8 +134,7 @@ async def new_url_encrypt(url):
     """
     try:
         if url is None or not (url.startswith("https://") or url.startswith("http://")): raise BadRequestError("You must provide a valid url.")
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(f"{get_base_url()}/v1/public/url-encrypt", params={"url": url}, headers=headers)
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as e: raise APIError(str(e))
+        response = requests.get(f"{get_base_url()}/v1/public/url-encrypt", params={"url": url}, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))

@@ -1,5 +1,5 @@
+import os, sys, logging, importlib 
 from .utils.basics import DotDict
-import os, sys, logging, asyncio, importlib 
 from .config import set_base_url, get_base_url
 import dymoapi.response_models as response_models
 from .services.autoupload import check_for_updates
@@ -46,13 +46,13 @@ class DymoAPI:
         self.base_url = get_base_url()
         check_for_updates()
     
-    async def _get_function(self, module_name, function_name="main"):
+    def _get_function(self, module_name, function_name="main"):
         if module_name == "private" and self.api_key is None and self.root_api_key is None: return logging.error("Invalid private token.")
         func = getattr(importlib.import_module(f".branches.{module_name}", package="dymoapi"), function_name)
-        if module_name == "private": return lambda *args, **kwargs: asyncio.to_thread(func, self.api_key or self.root_api_key, *args, **kwargs)
-        return lambda *args, **kwargs: asyncio.to_thread(func, *args, **kwargs)
+        if module_name == "private": return lambda *args, **kwargs: DotDict(func(self.api_key or self.root_api_key, *args, **kwargs))
+        return lambda *args, **kwargs: DotDict(func(*args, **kwargs))
 
-    async def is_valid_data(self, data: response_models.Validator) -> response_models.DataVerifierResponse:
+    def is_valid_data(self, data: response_models.Validator) -> response_models.DataVerifierResponse:
         """
         Validates the given data against the configured validation settings.
 
@@ -79,8 +79,7 @@ class DymoAPI:
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
         """
-        func = await self._get_function("private", "is_valid_data")
-        response = await func(data)
+        response = self._get_function("private", "is_valid_data")(data)
         if response.get("ip",{}).get("as"):
             response["ip"]["_as"] = response["ip"]["as"]
             response["ip"]["_class"] = response["ip"]["class"]
@@ -88,7 +87,7 @@ class DymoAPI:
             response["ip"].pop("class")
         return response_models.DataVerifierResponse(**response)
     
-    async def is_valid_email(self, email: str, rules: dict | None = None) -> bool:
+    def is_valid_email(self, email: str, rules: dict | None = None) -> bool:
         """
         Wrapper for the private email validation function.
 
@@ -116,10 +115,9 @@ class DymoAPI:
             https://docs.tpeoficial.com/docs/dymo-api/private/email-validation
         """
         rules_to_use = rules or self.rules.get("email")
-        func = await self._get_function("private", "is_valid_email")
-        return await func(email, rules_to_use)
+        return self._get_function("private", "is_valid_email")(email, rules_to_use)
     
-    async def is_valid_ip(self, ip: str, rules: dict | None = None) -> bool:
+    def is_valid_ip(self, ip: str, rules: dict | None = None) -> bool:
         """
         Wrapper for the private IP validation function.
 
@@ -147,10 +145,9 @@ class DymoAPI:
             https://docs.tpeoficial.com/docs/dymo-api/private/ip-validation
         """
         rules_to_use = rules or self.rules.get("ip")
-        func = await self._get_function("private", "is_valid_ip")
-        return await func(ip, rules_to_use)
+        return self._get_function("private", "is_valid_ip")(ip, rules_to_use)
     
-    async def is_valid_phone(self, phone: str, rules: dict | None = None) -> bool:
+    def is_valid_phone(self, phone: str, rules: dict | None = None) -> bool:
         """
         Wrapper for the private phone validation function.
 
@@ -178,10 +175,9 @@ class DymoAPI:
             https://docs.tpeoficial.com/docs/dymo-api/private/phone-validation
         """
         rules_to_use = rules or self.rules.get("phone")
-        func = await self._get_function("private", "is_valid_phone")
-        return await func(phone, rules_to_use)
+        return self._get_function("private", "is_valid_phone")(phone, rules_to_use)
     
-    async def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
+    def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
         """
         Sends an email using the configured email client settings.
 
@@ -214,10 +210,9 @@ class DymoAPI:
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/sender-send-email/getting-started)
         """
         if not self.server_email_config and not self.root_api_key: return logging.error("You must configure the email client settings.")
-        func = await self._get_function("private", "send_email")
-        return response_models.DataVerifierResponse(**await func({**data, "serverEmailConfig": self.server_email_config}))
+        return response_models.DataVerifierResponse(**self._get_function("private", "send_email")({**data, "serverEmailConfig": self.server_email_config}))
     
-    async def get_random(self, data: response_models.SRNG) -> response_models.SRNGResponse:
+    def get_random(self, data: response_models.SRNG) -> response_models.SRNGResponse:
         """
         Generates a random number (or numbers) between the provided min and max values.
 
@@ -239,10 +234,9 @@ class DymoAPI:
             
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/secure-random-number-generator)
         """
-        func = await self._get_function("private", "get_random")
-        return response_models.DataVerifierResponse(**await func({**data}))
+        return response_models.DataVerifierResponse(**self._get_function("private", "get_random")({**data}))
     
-    async def extract_with_textly(self, data: response_models.Textly) -> response_models.TextlyResponse:
+    def extract_with_textly(self, data: response_models.Textly) -> response_models.TextlyResponse:
         """
         Extracts structured data from a given text using the Textly endpoint.
 
@@ -264,10 +258,9 @@ class DymoAPI:
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/extract-textly)
         """        
-        func = await self._get_function("private", "extract_with_textly")
-        return response_models.ExtractWithTextlyResponse(**await func({**data}))
+        return response_models.ExtractWithTextlyResponse(**self._get_function("private", "extract_with_textly")({**data}))
 
-    async def get_prayer_times(self, data: response_models.PrayerTimesData) -> response_models.PrayerTimesResponse:
+    def get_prayer_times(self, data: response_models.PrayerTimesData) -> response_models.PrayerTimesResponse:
         """
         Retrieves the prayer times for the given location.
 
@@ -291,10 +284,9 @@ class DymoAPI:
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/public/prayertimes)
         """
-        func = await self._get_function("public", "get_prayer_times")
-        return response_models.PrayerTimesResponse(**await func(data))
+        return response_models.PrayerTimesResponse(**self._get_function("public", "get_prayer_times")(data))
 
-    async def satinizer(self, data: response_models.InputSanitizerData) -> response_models.SatinizerResponse:
+    def satinizer(self, data: response_models.InputSanitizerData) -> response_models.SatinizerResponse:
         """
         Sanitizes the input, replacing any special characters with their HTML entities.
 
@@ -312,10 +304,9 @@ class DymoAPI:
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/public/input-satinizer)
         """
-        func = await self._get_function("public", "satinizer")
-        return response_models.SatinizerResponse(**await func(data))
+        return response_models.SatinizerResponse(**self._get_function("public", "satinizer")(data))
 
-    async def is_valid_pwd(self, data: response_models.IsValidPwdData) -> response_models.IsValidPwdResponse:
+    def is_valid_pwd(self, data: response_models.IsValidPwdData) -> response_models.IsValidPwdResponse:
         """
         Validates a password based on the given parameters.
 
@@ -348,11 +339,9 @@ class DymoAPI:
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/public/password-validator)
         """
-        func = await self._get_function("public", "is_valid_pwd")
-        return response_models.IsValidPwdResponse(**await func(data))
+        return response_models.IsValidPwdResponse(**self._get_function("public", "is_valid_pwd")(data))
 
-    async def new_url_encrypt(self, data) -> response_models.UrlEncryptResponse:
-        func = await self._get_function("public", "new_url_encrypt")
-        return response_models.UrlEncryptResponse(**await func(data))
+    def new_url_encrypt(self, data) -> response_models.UrlEncryptResponse:
+        return response_models.UrlEncryptResponse(**self._get_function("public", "new_url_encrypt")(data))
     
 if __name__ == "__main__": sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
