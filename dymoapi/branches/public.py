@@ -4,9 +4,9 @@ from ..config import get_base_url
 from ..utils.decorators import deprecated
 from ..exceptions import APIError, BadRequestError
 
-headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.58"}
+headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.59"}
 
-def get_prayer_times(data):
+async def get_prayer_times(data):
     """
     Gets the prayer times for a given latitude and longitude.
 
@@ -32,7 +32,7 @@ def get_prayer_times(data):
     except requests.RequestException as e: raise APIError(str(e))
 
 @deprecated("satinize")
-def satinizer(data):
+async def satinizer(data):
     """
     Sanitizes the given input according to the Dymo API standard.
 
@@ -54,7 +54,7 @@ def satinizer(data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
-def satinize(input_value):
+async def satinize(input_value):
     """
     Sanitizes the given input according to the Dymo API standard.
 
@@ -75,7 +75,7 @@ def satinize(input_value):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
-def is_valid_pwd(data):
+async def is_valid_pwd(data):
     """
     Validates the given password against the configured deny rules.
 
@@ -118,7 +118,7 @@ def is_valid_pwd(data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
-def new_url_encrypt(url):
+async def new_url_encrypt(url):
     """
     Encrypts the given URL.
 
