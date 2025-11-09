@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import Enum
+from pydantic import BaseModel, RootModel, Field
 from typing import Any, Dict, List, Union, Optional, Literal
-from pydantic import BaseModel, Field
 
 ReputationPlugin = Literal["low", "medium", "high", "very-high", "education", "governmental", "unknown"]
 TyposquattingPlugin = Literal[0,1,2,3,4,5,6,7,8,9,10]
@@ -321,5 +321,5 @@ class Textly(BaseModel):
     data: str = Field(..., description="Input text")
     format: Dict[str, JsonSchemaProperty] = Field(..., description="Output schema")
 
-class TextlyResponse(BaseModel):
-    __root__: Any
+class TextlyResponse(RootModel):
+    root: Any
