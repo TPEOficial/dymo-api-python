@@ -47,7 +47,7 @@ def satinize(input_value):
     """
     try:
         if input_value is None: raise BadRequestError("You must specify at least the input.")
-        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input": quote(input_value)}, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -69,7 +69,7 @@ def satinizer(input_value):
     """
     try:
         if input is None: raise BadRequestError("You must specify at least the input.")
-        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input": quote(input_value)}, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
