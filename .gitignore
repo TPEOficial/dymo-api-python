@@ -4,3 +4,6 @@ dist
 build
 dymoapi.egg-info
 env
+.env
+venv
+.venv

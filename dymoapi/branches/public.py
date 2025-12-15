@@ -4,7 +4,7 @@ from ..config import get_base_url
 from ..utils.decorators import deprecated
 from ..exceptions import APIError, BadRequestError
 
-headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.61"}
+headers = {"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.62"}
 
 def get_prayer_times(data):
     """
@@ -31,8 +31,7 @@ def get_prayer_times(data):
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
 
-@deprecated("satinize")
-def satinizer(data):
+def satinize(input_value):
     """
     Sanitizes the given input according to the Dymo API standard.
 
@@ -47,8 +46,29 @@ def satinizer(data):
         APIError: If the request fails.
     """
     try:
-        input_value = data.get("input")
         if input_value is None: raise BadRequestError("You must specify at least the input.")
+        response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e: raise APIError(str(e))
+
+@deprecated("satinize")
+def satinizer(input_value):
+    """
+    Sanitizes the given input according to the Dymo API standard.
+
+    Args:
+        data (dict): Data containing the input to sanitize.
+
+    Returns:
+        dict: Sanitized input.
+
+    Raises:
+        BadRequestError: If the input is not provided.
+        APIError: If the request fails.
+    """
+    try:
+        if input is None: raise BadRequestError("You must specify at least the input.")
         response = requests.get(f"{get_base_url()}/v1/public/inputSatinizer", params={"input":quote(input_value)}, headers=headers)
         response.raise_for_status()
         return response.json()
