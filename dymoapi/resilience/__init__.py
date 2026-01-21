@@ -11,31 +11,83 @@ T = TypeVar('T')
 class RateLimitTracker:
     def __init__(self):
         self.client_limits = {}  # client_id -> rate_limit_info
-    
+
+    def _parse_header_value(self, value: Any) -> Optional[int]:
+        """
+        Parses a header value that could be a number or "unlimited".
+        Returns None if the value is "unlimited", None, or invalid.
+        """
+        # Handle non-string types (lists, dicts, None, etc.)
+        if value is None:
+            return None
+        if isinstance(value, (list, dict)):
+            return None
+
+        # Convert to string and normalize
+        try:
+            str_value = str(value).strip().lower()
+        except Exception:
+            return None
+
+        if not str_value or str_value == "unlimited":
+            return None
+
+        try:
+            # Handle floats by converting to float first, then int
+            parsed = int(float(str_value))
+            # Rate limits can't be negative
+            return parsed if parsed >= 0 else None
+        except (ValueError, TypeError):
+            return None
+
     def update_rate_limit(self, client_id: str, headers: Dict[str, str]):
         if client_id not in self.client_limits:
             self.client_limits[client_id] = {}
-        
+
         limit_info = self.client_limits[client_id]
-        
-        # Update rate limit headers
-        if 'X-Ratelimit-Limit-Requests' in headers:
-            limit_info['limit'] = int(headers['X-Ratelimit-Limit-Requests'])
-        if 'X-Ratelimit-Remaining-Requests' in headers:
-            limit_info['remaining'] = int(headers['X-Ratelimit-Remaining-Requests'])
-        if 'X-Ratelimit-Reset-Requests' in headers:
-            limit_info['reset_time'] = headers['X-Ratelimit-Reset-Requests']
-        if 'retry-after' in headers:
-            limit_info['retry_after'] = int(headers['retry-after'])
-        
+
+        # Get header values (case-insensitive lookup)
+        headers_lower = {k.lower(): v for k, v in headers.items()}
+
+        limit_requests = headers_lower.get('x-ratelimit-limit-requests')
+        remaining_requests = headers_lower.get('x-ratelimit-remaining-requests')
+        reset_requests = headers_lower.get('x-ratelimit-reset-requests')
+        retry_after = headers_lower.get('retry-after')
+
+        # Only update numeric values if they are valid numbers (not "unlimited")
+        parsed_limit = self._parse_header_value(limit_requests)
+        parsed_remaining = self._parse_header_value(remaining_requests)
+        parsed_retry_after = self._parse_header_value(retry_after)
+
+        if parsed_limit is not None:
+            limit_info['limit'] = parsed_limit
+        if parsed_remaining is not None:
+            limit_info['remaining'] = parsed_remaining
+        # Mark as unlimited if header explicitly says "unlimited"
+        if remaining_requests is not None:
+            try:
+                if str(remaining_requests).strip().lower() == "unlimited":
+                    limit_info['is_unlimited'] = True
+            except Exception:
+                pass
+        if reset_requests:
+            limit_info['reset_time'] = reset_requests
+        if parsed_retry_after is not None:
+            limit_info['retry_after'] = parsed_retry_after
+
         limit_info['last_updated'] = time.time()
-    
+
     def is_rate_limited(self, client_id: str) -> bool:
         if client_id not in self.client_limits:
             return False
-        
+
         limit_info = self.client_limits[client_id]
-        return limit_info.get('remaining', 1) <= 0
+        # If marked as unlimited, never rate limited
+        if limit_info.get('is_unlimited', False):
+            return False
+        # Only consider rate limited if remaining is explicitly set and is 0 or less
+        remaining = limit_info.get('remaining')
+        return remaining is not None and remaining <= 0
     
     def get_retry_after(self, client_id: str) -> Optional[int]:
         if client_id not in self.client_limits:
