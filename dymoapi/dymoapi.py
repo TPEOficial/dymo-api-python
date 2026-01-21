@@ -3,15 +3,17 @@ from .utils.basics import DotDict
 from .config import set_base_url, get_base_url
 import dymoapi.response_models as response_models
 from .services.autoupload import check_for_updates
+from .resilience import ResilienceManager, FallbackDataGenerator
+from requests import Session
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DymoAPI:
     def __init__(self, config={}):
         """
-        This is the main class to interact with the Dymo API. It should be
-        instantiated with the root API key and the API key. The root API key is
-        used to fetch the tokens and the API key is used to authenticate the
+        This is the main class to interact with Dymo API. It should be
+        instantiated with root API key and API key. The root API key is
+        used to fetch the tokens and the API key is used to authenticate
         requests.
 
         Args:
@@ -19,10 +21,11 @@ class DymoAPI:
             - options["root_api_key"] (str, optional): The root API key. Defaults to None.
             - options["api_key"] (str, optional): The API key. Defaults to None.
             - options["base_url"] (str, optional): Whether to use a local server instead of 
-                                            the cloud server. Defaults to False.
+                                            cloud server. Defaults to False.
             - options["server_email_config"] (dict, optional): 
                                         The server email config. Defaults to None.
             - options["rules"] (dict, optional): The rules config. Defaults to None.
+            - options["resilience"] (dict, optional): The resilience config. Defaults to None.
 
         Example:
             dymo_api = DymoAPI({
@@ -44,6 +47,29 @@ class DymoAPI:
 
         set_base_url(self.base_url)
         self.base_url = get_base_url()
+        
+        # Initialize resilience system
+        resilience = config.get("resilience", {})
+        client_id = self.api_key or self.root_api_key or "anonymous"
+        self.resilience = ResilienceManager(client_id=client_id)
+        if resilience:
+            self.resilience.config.fallback_enabled = resilience.get("fallback_enabled", False)
+            self.resilience.config.retry_attempts = resilience.get("retry_attempts", 2)
+            self.resilience.config.retry_delay = resilience.get("retry_delay", 1000)
+        
+        # Initialize requests session
+        self.session = Session()
+        self.session.headers.update({
+            "User-Agent": "DymoAPISDK/1.0.0",
+            "X-Dymo-SDK-Env": "Python",
+            "X-Dymo-SDK-Version": "0.0.62"
+        })
+        
+        if self.root_api_key or self.api_key:
+            self.session.headers.update({
+                "Authorization": f"Bearer {self.root_api_key or self.api_key}"
+            })
+        
         check_for_updates()
     
     def _get_function(self, module_name, function_name="main"):
@@ -54,9 +80,9 @@ class DymoAPI:
 
     def is_valid_data(self, data: response_models.Validator) -> response_models.DataVerifierResponse:
         """
-        Validates the given data against the configured validation settings.
+        Validates given data against the configured validation settings.
 
-        This method requires either the root API key or the API key to be set.
+        This method requires either root API key or the API key to be set.
         If neither is set, it will throw an error.
 
         Args:
@@ -79,20 +105,35 @@ class DymoAPI:
 
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
         """
-        response = self._get_function("private", "is_valid_data")(data)
-        if response.get("ip",{}).get("as"):
-            response["ip"]["_as"] = response["ip"]["as"]
-            response["ip"]["_class"] = response["ip"]["class"]
-            response["ip"].pop("as")
-            response["ip"].pop("class")
-        return response_models.DataVerifierResponse(**response)
+        fallback_data = FallbackDataGenerator.generate_fallback_data("isValidData", data.dict())
+        
+        try:
+            response = self.resilience.execute_with_resilience(
+                session=self.session,
+                method="POST",
+                url=f"{self.base_url}/v1/private/secure/verify",
+                json=data.dict() if hasattr(data, 'dict') else data,
+                fallback_data=fallback_data if self.resilience.config.fallback_enabled else None
+            )
+            
+            if response.get("ip",{}).get("as"):
+                response["ip"]["_as"] = response["ip"]["as"]
+                response["ip"]["_class"] = response["ip"]["class"]
+                response["ip"].pop("as")
+                response["ip"].pop("class")
+            
+            return response_models.DataVerifierResponse(**response)
+        except Exception as e:
+            if self.resilience.config.fallback_enabled:
+                return response_models.DataVerifierResponse(**fallback_data)
+            raise e
     
     def is_valid_email(self, email: str, rules: dict | None = None) -> bool:
         """
-        Wrapper for the private email validation function.
+        Wrapper for private email validation function.
 
-        Calls the internal `is_valid_email` function with the provided email and deny rules,
-        returning True or False according to the validation result.
+        Calls internal `is_valid_email` function with provided email and deny rules,
+        returning True or False according to validation result.
 
         Args:
             email (str): The email address to validate.
@@ -100,10 +141,10 @@ class DymoAPI:
                 ⚠️ Some deny rules are PREMIUM: "NO_MX_RECORDS", "HIGH_RISK_SCORE", "NO_REACHABLE".
 
         Returns:
-            bool: True if the email passes validation, False otherwise.
+            bool: True if email passes validation, False otherwise.
 
         Raises:
-            APIError: If the underlying validation function fails or the API key is missing.
+            APIError: If underlying validation function fails or API key is missing.
 
         Example:
             >>> valid = dymoClient.is_valid_email(
@@ -115,13 +156,20 @@ class DymoAPI:
             https://docs.tpeoficial.com/docs/dymo-api/private/email-validation
         """
         rules_to_use = rules or self.rules.get("email")
-        return self._get_function("private", "is_valid_email")(email, rules_to_use)
+        fallback_data = FallbackDataGenerator.generate_fallback_data("isValidEmail", email)
+        
+        try:
+            return self._get_function("private", "is_valid_email")(email, rules_to_use)
+        except Exception as e:
+            if self.resilience.config.fallback_enabled:
+                return fallback_data.get("allow", False)
+            raise e
     
     def is_valid_ip(self, ip: str, rules: dict | None = None) -> bool:
         """
-        Wrapper for the private IP validation function.
+        Wrapper for private IP validation function.
 
-        Calls the internal `is_valid_ip` function with the provided IP and deny rules,
+        Calls internal `is_valid_ip` function with the provided IP and deny rules,
         returning True or False according to the validation result.
 
         Args:
@@ -130,10 +178,10 @@ class DymoAPI:
                 ⚠️ Some deny rules are PREMIUM: "TOR_NETWORK", "HIGH_RISK_SCORE".
 
         Returns:
-            bool: True if the IP passes validation, False otherwise.
+            bool: True if IP passes validation, False otherwise.
 
         Raises:
-            APIError: If the underlying validation function fails or the API key is missing.
+            APIError: If the underlying validation function fails or API key is missing.
 
         Example:
             >>> valid = dymoClient.is_valid_ip(
@@ -145,13 +193,20 @@ class DymoAPI:
             https://docs.tpeoficial.com/docs/dymo-api/private/ip-validation
         """
         rules_to_use = rules or self.rules.get("ip")
-        return self._get_function("private", "is_valid_ip")(ip, rules_to_use)
+        fallback_data = FallbackDataGenerator.generate_fallback_data("isValidIP", ip)
+        
+        try:
+            return self._get_function("private", "is_valid_ip")(ip, rules_to_use)
+        except Exception as e:
+            if self.resilience.config.fallback_enabled:
+                return fallback_data.get("allow", False)
+            raise e
     
     def is_valid_phone(self, phone: str, rules: dict | None = None) -> bool:
         """
-        Wrapper for the private phone validation function.
+        Wrapper for private phone validation function.
 
-        Calls the internal `is_valid_phone` function with the provided phone and deny rules,
+        Calls internal `is_valid_phone` function with the provided phone and deny rules,
         returning True or False according to the validation result.
 
         Args:
@@ -160,10 +215,10 @@ class DymoAPI:
                 ⚠️ Some deny rules are PREMIUM: "HIGH_RISK_SCORE".
 
         Returns:
-            bool: True if the phone passes validation, False otherwise.
+            bool: True if phone passes validation, False otherwise.
 
         Raises:
-            APIError: If the underlying validation function fails or the API key is missing.
+            APIError: If the underlying validation function fails or API key is missing.
 
         Example:
             >>> valid = dymoClient.is_valid_phone(
@@ -175,8 +230,15 @@ class DymoAPI:
             https://docs.tpeoficial.com/docs/dymo-api/private/phone-validation
         """
         rules_to_use = rules or self.rules.get("phone")
-        return self._get_function("private", "is_valid_phone")(phone, rules_to_use)
-    
+        fallback_data = FallbackDataGenerator.generate_fallback_data("isValidPhone", phone)
+        
+        try:
+            return self._get_function("private", "is_valid_phone")(phone, rules_to_use)
+        except Exception as e:
+            if self.resilience.config.fallback_enabled:
+                return fallback_data.get("allow", False)
+            raise e
+
     def send_email(self, data: response_models.EmailStatus) -> response_models.SendEmailResponse:
         """
         Sends an email using the configured email client settings.
@@ -190,7 +252,7 @@ class DymoAPI:
             - data["to"] (str): The email address to which the email will be sent.
             - data["subject"] (str): The subject of the email.
             - data["html"] (str, optional): The HTML content of the email.
-            - data["react"] (Object, optional): The React component to be rendered as the email content.
+            - data["react"] (Object, optional): The React component to be rendered as email content.
             - data["options"] (dict, optional): Content configuration options.
             - data["options"]["priority"] (str, optional): Email priority (default: "normal").  Allowed values: "high", "normal", "low".
             - data["options"]["waitToResponse"] (bool, optional): Wait until the email is sent (default: True).
@@ -223,7 +285,7 @@ class DymoAPI:
             - data (response_models.SRNG): The data for random number generation.
             - data["min"] (int/float): The minimum value of the range.
             - data["max"] (int/float): The maximum value of the range.
-            - data["quantity"] (int, optional): The number of random values to generate. Defaults to 1.
+            - data["quantity"] (int, optional): The number of random values to generate. Defaults to1.
 
         Returns:
             Promise[response_models.SRNGResponse]: A promise that resolves to the response from the server.
@@ -231,14 +293,14 @@ class DymoAPI:
         Raises:
             Exception: An error will be thrown if there is an issue with the random number 
                     generation process.
-            
+               
         [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/secure-random-number-generator)
         """
         return response_models.DataVerifierResponse(**self._get_function("private", "get_random")({**data}))
     
     def extract_with_textly(self, data: response_models.Textly) -> response_models.TextlyResponse:
         """
-        Extracts structured data from a given text using the Textly endpoint.
+        Extracts structured data from a given text using Textly endpoint.
 
         This method requires a valid private API token to authenticate the request.
         The input must include both the text to process and a format schema describing 
@@ -310,7 +372,7 @@ class DymoAPI:
         """
         Validates a password based on the given parameters.
 
-        This method requires the password to be provided in the data object.
+        This method requires a password to be provided in the data object.
         If the password is not provided, an error will be thrown. The method
         will validate the password against the following rules:
             - The password must be at least `data["min"]` characters long (default 8).
@@ -323,8 +385,8 @@ class DymoAPI:
 
         Args:
             - data (response_models.IsValidPwdData): The data for password validation.
-            - data["min"] (int, optional): Minimum length of the password. Defaults to 8.
-            - data["max"] (int, optional): Maximum length of the password. Defaults to 32.
+            - data["min"] (int, optional): Minimum length of password. Defaults to 8.
+            - data["max"] (int, optional): Maximum length of password. Defaults to 32.
             - data["email"] (str, optional): Optional email associated with the password.
             - data["password"] (str): The password to be validated.
             - data["bannedWords"] (str or list[str], optional): The list of banned words that the password must not contain.
