@@ -10,17 +10,31 @@ class MxRecord(BaseModel):
     priority: int
     exchange: str
 
+class SocialFootprintPlatform(BaseModel):
+    """Platform detected by Social Footprint plugin"""
+    slug: str
+    platform: str
+    category: str
+    confidence: int
+    metadata: Optional[Dict[str, Any]] = None
+
+class SocialFootprintPlugin(BaseModel):
+    """Social Footprint plugin response"""
+    totalChecked: int
+    platforms: List[SocialFootprintPlatform]
+
 class Plugins(BaseModel):
-    blocklist: Optional[bool]
-    gravatarUrl: Optional[str]
-    compromiseDetector: Optional[bool]
-    mxRecords: Optional[List[MxRecord]]
-    nsfw: Optional[bool]
-    reputation: Optional[ReputationPlugin]
-    riskScore: Optional[float]
-    torNetwork: Optional[bool]
-    typosquatting: Optional[TyposquattingPlugin]
-    urlShortener: Optional[bool]
+    blocklist: Optional[bool] = None
+    gravatarUrl: Optional[str] = None
+    compromiseDetector: Optional[bool] = None
+    mxRecords: Optional[List[MxRecord]] = None
+    nsfw: Optional[bool] = None
+    reputation: Optional[ReputationPlugin] = None
+    riskScore: Optional[float] = None
+    socialFootprint: Optional[SocialFootprintPlugin] = None
+    torNetwork: Optional[bool] = None
+    typosquatting: Optional[TyposquattingPlugin] = None
+    urlShortener: Optional[bool] = None
 
 class VerifyPlugins(Enum):
     BLOCKLIST = "blocklist"
@@ -30,6 +44,7 @@ class VerifyPlugins(Enum):
     NSFW = "nsfw"
     REPUTATION = "reputation"
     RISK_SCORE = "riskScore"
+    SOCIAL_FOOTPRINT = "socialFootprint"
     TOR_NETWORK = "torNetwork"
     TYPOSQUATTING = "typosquatting"
     URL_SHORTENER = "urlShortener"

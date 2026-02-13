@@ -429,6 +429,10 @@ class FallbackDataGenerator:
             "nsfw": False,
             "reputation": "unknown",
             "riskScore": 0,
+            "socialFootprint": {
+                "totalChecked": 0,
+                "platforms": []
+            },
             "torNetwork": False,
             "typosquatting": 0,
             "urlShortener": False,
