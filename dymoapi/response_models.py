@@ -6,9 +6,23 @@ from typing import Any, Dict, List, Union, Optional, Literal
 ReputationPlugin = Literal["low", "medium", "high", "very-high", "education", "governmental", "unknown"]
 TyposquattingPlugin = Literal[0,1,2,3,4,5,6,7,8,9,10]
 
+IsReachable = Literal["safe", "invalid", "risky", "unknown"]
+
 class MxRecord(BaseModel):
     priority: int
     exchange: str
+
+class SmtpDetails(BaseModel):
+    canConnectSmtp: bool
+    deliverable: bool
+    catchAll: bool
+    disabled: bool
+    fullInbox: bool
+    blacklisted: bool
+
+class ReachableResult(BaseModel):
+    reachability: IsReachable
+    smtp: SmtpDetails
 
 class SocialFootprintPlatform(BaseModel):
     """Platform detected by Social Footprint plugin"""
@@ -29,6 +43,7 @@ class Plugins(BaseModel):
     compromiseDetector: Optional[bool] = None
     mxRecords: Optional[List[MxRecord]] = None
     nsfw: Optional[bool] = None
+    reachable: Optional[ReachableResult] = None
     reputation: Optional[ReputationPlugin] = None
     riskScore: Optional[float] = None
     socialFootprint: Optional[SocialFootprintPlugin] = None
@@ -42,6 +57,7 @@ class VerifyPlugins(Enum):
     GRAVATAR_URL = "gravatarUrl"
     MX_RECORDS = "mxRecords"
     NSFW = "nsfw"
+    REACHABLE = "reachable"
     REPUTATION = "reputation"
     RISK_SCORE = "riskScore"
     SOCIAL_FOOTPRINT = "socialFootprint"
