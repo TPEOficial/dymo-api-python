@@ -265,7 +265,11 @@ class FallbackDataGenerator:
             "mobile": False,
             "proxy": True,
             "hosting": False,
-            "plugins": {"blocklist": False, "riskScore": 0}
+            "plugins": {
+                "blocklist": False,
+                "riskScore": 0,
+                "spam": False
+            }
         }
     
     @staticmethod
@@ -301,7 +305,11 @@ class FallbackDataGenerator:
             },
             "country": "",
             "countryCode": "",
-            "plugins": {"blocklist": False, "riskScore": 0}
+            "plugins": {
+                "blocklist": False,
+                "riskScore": 0,
+                "spam": False
+            }
         }
     
     @staticmethod
@@ -414,6 +422,7 @@ class FallbackDataGenerator:
             "nsfw": False,
             "reputation": "unknown",
             "riskScore": 0,
+            "spam": False,
             "torNetwork": False,
             "typosquatting": 0,
             "urlShortener": False
@@ -433,6 +442,7 @@ class FallbackDataGenerator:
                 "totalChecked": 0,
                 "platforms": []
             },
+            "spam": False,
             "torNetwork": False,
             "typosquatting": 0,
             "urlShortener": False,

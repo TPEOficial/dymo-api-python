@@ -47,6 +47,7 @@ class Plugins(BaseModel):
     reputation: Optional[ReputationPlugin] = None
     riskScore: Optional[float] = None
     socialFootprint: Optional[SocialFootprintPlugin] = None
+    spam: Optional[bool] = None
     torNetwork: Optional[bool] = None
     typosquatting: Optional[TyposquattingPlugin] = None
     urlShortener: Optional[bool] = None
@@ -61,6 +62,7 @@ class VerifyPlugins(Enum):
     REPUTATION = "reputation"
     RISK_SCORE = "riskScore"
     SOCIAL_FOOTPRINT = "socialFootprint"
+    SPAM = "spam"
     TOR_NETWORK = "torNetwork"
     TYPOSQUATTING = "typosquatting"
     URL_SHORTENER = "urlShortener"

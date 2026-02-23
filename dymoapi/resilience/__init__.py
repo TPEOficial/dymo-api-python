@@ -18,31 +18,24 @@ class RateLimitTracker:
         Returns None if the value is "unlimited", None, or invalid.
         """
         # Handle non-string types (lists, dicts, None, etc.)
-        if value is None:
-            return None
-        if isinstance(value, (list, dict)):
-            return None
+        if value is None: return None
+        if isinstance(value, (list, dict)): return None
 
         # Convert to string and normalize
-        try:
-            str_value = str(value).strip().lower()
-        except Exception:
-            return None
+        try: str_value = str(value).strip().lower()
+        except Exception: return None
 
-        if not str_value or str_value == "unlimited":
-            return None
+        if not str_value or str_value == "unlimited": return None
 
         try:
             # Handle floats by converting to float first, then int
             parsed = int(float(str_value))
             # Rate limits can't be negative
             return parsed if parsed >= 0 else None
-        except (ValueError, TypeError):
-            return None
+        except (ValueError, TypeError): return None
 
     def update_rate_limit(self, client_id: str, headers: Dict[str, str]):
-        if client_id not in self.client_limits:
-            self.client_limits[client_id] = {}
+        if client_id not in self.client_limits: self.client_limits[client_id] = {}
 
         limit_info = self.client_limits[client_id]
 
@@ -59,39 +52,30 @@ class RateLimitTracker:
         parsed_remaining = self._parse_header_value(remaining_requests)
         parsed_retry_after = self._parse_header_value(retry_after)
 
-        if parsed_limit is not None:
-            limit_info['limit'] = parsed_limit
-        if parsed_remaining is not None:
-            limit_info['remaining'] = parsed_remaining
+        if parsed_limit is not None: limit_info['limit'] = parsed_limit
+        if parsed_remaining is not None: limit_info['remaining'] = parsed_remaining
         # Mark as unlimited if header explicitly says "unlimited"
         if remaining_requests is not None:
             try:
-                if str(remaining_requests).strip().lower() == "unlimited":
-                    limit_info['is_unlimited'] = True
-            except Exception:
-                pass
-        if reset_requests:
-            limit_info['reset_time'] = reset_requests
-        if parsed_retry_after is not None:
-            limit_info['retry_after'] = parsed_retry_after
+                if str(remaining_requests).strip().lower() == "unlimited": limit_info['is_unlimited'] = True
+            except Exception: pass
+        if reset_requests: limit_info['reset_time'] = reset_requests
+        if parsed_retry_after is not None: limit_info['retry_after'] = parsed_retry_after
 
         limit_info['last_updated'] = time.time()
 
     def is_rate_limited(self, client_id: str) -> bool:
-        if client_id not in self.client_limits:
-            return False
+        if client_id not in self.client_limits: return False
 
         limit_info = self.client_limits[client_id]
         # If marked as unlimited, never rate limited
-        if limit_info.get('is_unlimited', False):
-            return False
+        if limit_info.get('is_unlimited', False): return False
         # Only consider rate limited if remaining is explicitly set and is 0 or less
         remaining = limit_info.get('remaining')
         return remaining is not None and remaining <= 0
     
     def get_retry_after(self, client_id: str) -> Optional[int]:
-        if client_id not in self.client_limits:
-            return None
+        if client_id not in self.client_limits: return None
         return self.client_limits[client_id].get('retry_after')
 
 # Global rate limit tracker
@@ -178,8 +162,7 @@ class ResilienceManager:
                 is_last_attempt = attempt == total_attempts
                 
                 # Don't retry on rate limiting (429)
-                if hasattr(e, 'response') and e.response and e.response.status_code == 429:
-                    should_retry = False
+                if hasattr(e, 'response') and e.response and e.response.status_code == 429: should_retry = False
                 
                 if not should_retry or is_last_attempt:
                     if self.config.fallback_enabled and fallback_data is not None:
@@ -204,16 +187,13 @@ class ResilienceManager:
             True if should retry, False otherwise
         """
         # Network errors (no response) - retry
-        if error.response is None and not hasattr(error, 'timeout'): 
-            return True
+        if error.response is None and not hasattr(error, 'timeout'): return True
             
         # Server errors (5xx) - retry
-        if error.response is not None and 500 <= error.response.status_code < 600: 
-            return True
+        if error.response is not None and 500 <= error.response.status_code < 600: return True
             
         # Rate limiting (429) - DO NOT retry (handled separately)
-        if error.response is not None and error.response.status_code == 429: 
-            return False
+        if error.response is not None and error.response.status_code == 429: return False
             
         # Don't retry on client errors (4xx except 429)
         return False
