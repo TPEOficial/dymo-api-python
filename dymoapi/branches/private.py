@@ -8,7 +8,7 @@ from ..exceptions import APIError, BadRequestError
 def is_valid_data(token, data):
     if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -16,7 +16,7 @@ def is_valid_data(token, data):
 def is_valid_data_raw(token, data):
     if not any([key in list(data.keys()) for key in ["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"]]): raise BadRequestError("You must provide at least one parameter.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/secure/verify", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -54,7 +54,7 @@ def is_valid_email(token: Optional[str], email: str, rules: Optional[Dict[str, L
         resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"email": email, "plugins": plugins},
-            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token}
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token}
         )
         resp.raise_for_status()
         data = resp.json().get("email", {})
@@ -110,7 +110,7 @@ def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, List[st
     """
     if token is None: raise APIError("Invalid private token.")
 
-    if rules is None: rules = {"deny": ["FRAUD", "INVALID", "TOR_NETWORK"]}
+    if rules is None: rules = {"deny": ["FRAUD", "INVALID", "VPN", "TOR_NETWORK"]}
 
     plugins = [
         "torNetwork" if "TOR_NETWORK" in rules["deny"] else None,
@@ -122,7 +122,7 @@ def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, List[st
         resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"ip": ip, "plugins": plugins},
-            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token}
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token}
         )
         resp.raise_for_status()
         data = resp.json().get("ip", {})
@@ -138,6 +138,8 @@ def is_valid_ip(token: Optional[str], ip: str, rules: Optional[Dict[str, List[st
                 "response": data
             }
         if "FRAUD" in deny and data.get("fraud", False): reasons.append("FRAUD")
+        if "VPN" in deny and data.get("vpn", False): reasons.append("VPN")
+        if "PROXY" in deny and data.get("proxy", False): reasons.append("PROXY")
         if "TOR_NETWORK" in deny and data.get("plugins", {}).get("torNetwork", False): reasons.append("TOR_NETWORK")
         if "HIGH_RISK_SCORE" in deny and data.get("plugins", {}).get("riskScore", 0) >= 80: reasons.append("HIGH_RISK_SCORE")
 
@@ -186,7 +188,7 @@ def is_valid_phone(token: Optional[str], phone: str, rules: Optional[Dict[str, L
         resp = requests.post(
             f"{get_base_url()}/v1/private/secure/verify",
             json={"phone": phone, "plugins": plugins},
-            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token}
+            headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token}
         )
         resp.raise_for_status()
         data = resp.json().get("phone", {})
@@ -225,7 +227,7 @@ def send_email(token, data):
     if not data.get("subject"): raise BadRequestError("You must provide a subject for the email to be sent.")
     if not data.get("html"): raise BadRequestError("You must provide HTML.")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/sender/sendEmail", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -237,7 +239,7 @@ def get_random(token, data):
     if data.get("min") < -1000000000 or data.get("min") > 1000000000: raise BadRequestError("'min' must be an integer in the interval [-1000000000, 1000000000].")
     if data.get("max") < -1000000000 or data.get("max") > 1000000000: raise BadRequestError("'max' must be an integer in the interval [-1000000000, 1000000000].")
     try:
-        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.68", "Authorization": token})
+        response = requests.post(f"{get_base_url()}/v1/private/srng", json=data, headers={"User-Agent": "DymoAPISDK/1.0.0", "X-Dymo-SDK-Env": "Python", "X-Dymo-SDK-Version" : "0.0.69", "Authorization": token})
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e: raise APIError(str(e))
@@ -255,7 +257,7 @@ def extract_with_textly(token: str, data: dict) -> dict:
                 "Content-Type": "application/json",
                 "User-Agent": "DymoAPISDK/1.0.0",
                 "X-Dymo-SDK-Env": "Python",
-                "X-Dymo-SDK-Version": "0.0.68",
+                "X-Dymo-SDK-Version": "0.0.69",
                 "Authorization": token
             }
         )

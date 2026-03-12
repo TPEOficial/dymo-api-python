@@ -263,7 +263,8 @@ class FallbackDataGenerator:
             "as": "",
             "asname": "",
             "mobile": False,
-            "proxy": True,
+            "vpn": False,
+            "proxy": False,
             "hosting": False,
             "plugins": {
                 "blocklist": False,
